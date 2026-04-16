@@ -22,7 +22,7 @@ export async function getSession(): Promise<SessionUser | null> {
   // Try Firebase ID token (Google or Firebase email/password)
   if (sessionCookie) {
     try {
-      const decodedToken: DecodedIdToken = await adminAuth.verifyIdToken(sessionCookie, true);
+      const decodedToken: DecodedIdToken = await adminAuth().verifyIdToken(sessionCookie, true);
       const user = await prisma.user.findUnique({
         where: { email: decodedToken.email! },
       });
