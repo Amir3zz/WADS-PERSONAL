@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
   const idToken = authorization.split("Bearer ")[1];
 
   try {
-    const decodedToken = await adminAuth.verifyIdToken(idToken, true);
+    const decodedToken = await adminAuth().verifyIdToken(idToken, true);
 
     const uid = decodedToken.uid;
     const email = decodedToken.email;
@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Email not found in token" }, { status: 401 });
     }
 
-    const userRecord = await adminAuth.getUser(uid);
+    const userRecord = await adminAuth().getUser(uid);
     const name = userRecord.displayName ?? decodedToken.name ?? null;
     const image = userRecord.photoURL ?? (decodedToken as { picture?: string }).picture ?? null;
 
