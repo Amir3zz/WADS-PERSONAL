@@ -10,6 +10,24 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    env:
+      NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
+      NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
+      NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
+      NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
+      NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
+      NEXT_PUBLIC_FIREBASE_APP_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}
+
+      FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+      FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
+      FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
+
+      BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
+      BETTER_AUTH_URL: ${{ secrets.BETTER_AUTH_URL }}
+      NEXT_PUBLIC_BETTER_AUTH_URL: ${{ secrets.NEXT_PUBLIC_BETTER_AUTH_URL }}
+
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/appdb?schema=public
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -20,11 +38,16 @@ jobs:
       - name: Build Docker image
         run: docker build -t my-app .
 
-      - name: Run container test
+      - name: Run container (basic test)
         run: |
           docker run -d -p 3000:3000 \
-          -e DATABASE_URL="postgresql://postgres:postgres@localhost:5432/appdb" \
+          -e DATABASE_URL="postgresql://postgres:postgres@localhost:5432/appdb?schema=public" \
           --name test-container my-app
-          sleep 10
+
+          # wait for app to start
+          sleep 15
+
+          # show logs (important for your submission)
           docker logs test-container
+
           docker stop test-container
