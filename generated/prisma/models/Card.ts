@@ -40,6 +40,10 @@ export type CardMinAggregateOutputType = {
   description: string | null
   position: number | null
   completed: boolean | null
+  dueDate: Date | null
+  priority: string | null
+  aiSubtasks: string | null
+  aiSuggestion: string | null
   createdAt: Date | null
   updatedAt: Date | null
   columnId: string | null
@@ -51,6 +55,10 @@ export type CardMaxAggregateOutputType = {
   description: string | null
   position: number | null
   completed: boolean | null
+  dueDate: Date | null
+  priority: string | null
+  aiSubtasks: string | null
+  aiSuggestion: string | null
   createdAt: Date | null
   updatedAt: Date | null
   columnId: string | null
@@ -62,6 +70,10 @@ export type CardCountAggregateOutputType = {
   description: number
   position: number
   completed: number
+  dueDate: number
+  priority: number
+  aiSubtasks: number
+  aiSuggestion: number
   createdAt: number
   updatedAt: number
   columnId: number
@@ -83,6 +95,10 @@ export type CardMinAggregateInputType = {
   description?: true
   position?: true
   completed?: true
+  dueDate?: true
+  priority?: true
+  aiSubtasks?: true
+  aiSuggestion?: true
   createdAt?: true
   updatedAt?: true
   columnId?: true
@@ -94,6 +110,10 @@ export type CardMaxAggregateInputType = {
   description?: true
   position?: true
   completed?: true
+  dueDate?: true
+  priority?: true
+  aiSubtasks?: true
+  aiSuggestion?: true
   createdAt?: true
   updatedAt?: true
   columnId?: true
@@ -105,6 +125,10 @@ export type CardCountAggregateInputType = {
   description?: true
   position?: true
   completed?: true
+  dueDate?: true
+  priority?: true
+  aiSubtasks?: true
+  aiSuggestion?: true
   createdAt?: true
   updatedAt?: true
   columnId?: true
@@ -203,6 +227,10 @@ export type CardGroupByOutputType = {
   description: string | null
   position: number
   completed: boolean
+  dueDate: Date | null
+  priority: string | null
+  aiSubtasks: string | null
+  aiSuggestion: string | null
   createdAt: Date
   updatedAt: Date
   columnId: string
@@ -237,6 +265,10 @@ export type CardWhereInput = {
   description?: Prisma.StringNullableFilter<"Card"> | string | null
   position?: Prisma.IntFilter<"Card"> | number
   completed?: Prisma.BoolFilter<"Card"> | boolean
+  dueDate?: Prisma.DateTimeNullableFilter<"Card"> | Date | string | null
+  priority?: Prisma.StringNullableFilter<"Card"> | string | null
+  aiSubtasks?: Prisma.StringNullableFilter<"Card"> | string | null
+  aiSuggestion?: Prisma.StringNullableFilter<"Card"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Card"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Card"> | Date | string
   columnId?: Prisma.StringFilter<"Card"> | string
@@ -250,6 +282,10 @@ export type CardOrderByWithRelationInput = {
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   position?: Prisma.SortOrder
   completed?: Prisma.SortOrder
+  dueDate?: Prisma.SortOrderInput | Prisma.SortOrder
+  priority?: Prisma.SortOrderInput | Prisma.SortOrder
+  aiSubtasks?: Prisma.SortOrderInput | Prisma.SortOrder
+  aiSuggestion?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   columnId?: Prisma.SortOrder
@@ -266,6 +302,10 @@ export type CardWhereUniqueInput = Prisma.AtLeast<{
   description?: Prisma.StringNullableFilter<"Card"> | string | null
   position?: Prisma.IntFilter<"Card"> | number
   completed?: Prisma.BoolFilter<"Card"> | boolean
+  dueDate?: Prisma.DateTimeNullableFilter<"Card"> | Date | string | null
+  priority?: Prisma.StringNullableFilter<"Card"> | string | null
+  aiSubtasks?: Prisma.StringNullableFilter<"Card"> | string | null
+  aiSuggestion?: Prisma.StringNullableFilter<"Card"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Card"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Card"> | Date | string
   columnId?: Prisma.StringFilter<"Card"> | string
@@ -279,6 +319,10 @@ export type CardOrderByWithAggregationInput = {
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   position?: Prisma.SortOrder
   completed?: Prisma.SortOrder
+  dueDate?: Prisma.SortOrderInput | Prisma.SortOrder
+  priority?: Prisma.SortOrderInput | Prisma.SortOrder
+  aiSubtasks?: Prisma.SortOrderInput | Prisma.SortOrder
+  aiSuggestion?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   columnId?: Prisma.SortOrder
@@ -298,6 +342,10 @@ export type CardScalarWhereWithAggregatesInput = {
   description?: Prisma.StringNullableWithAggregatesFilter<"Card"> | string | null
   position?: Prisma.IntWithAggregatesFilter<"Card"> | number
   completed?: Prisma.BoolWithAggregatesFilter<"Card"> | boolean
+  dueDate?: Prisma.DateTimeNullableWithAggregatesFilter<"Card"> | Date | string | null
+  priority?: Prisma.StringNullableWithAggregatesFilter<"Card"> | string | null
+  aiSubtasks?: Prisma.StringNullableWithAggregatesFilter<"Card"> | string | null
+  aiSuggestion?: Prisma.StringNullableWithAggregatesFilter<"Card"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Card"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Card"> | Date | string
   columnId?: Prisma.StringWithAggregatesFilter<"Card"> | string
@@ -309,6 +357,10 @@ export type CardCreateInput = {
   description?: string | null
   position: number
   completed?: boolean
+  dueDate?: Date | string | null
+  priority?: string | null
+  aiSubtasks?: string | null
+  aiSuggestion?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   column: Prisma.ColumnCreateNestedOneWithoutCardsInput
@@ -321,6 +373,10 @@ export type CardUncheckedCreateInput = {
   description?: string | null
   position: number
   completed?: boolean
+  dueDate?: Date | string | null
+  priority?: string | null
+  aiSubtasks?: string | null
+  aiSuggestion?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   columnId: string
@@ -333,6 +389,10 @@ export type CardUpdateInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   position?: Prisma.IntFieldUpdateOperationsInput | number
   completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  priority?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiSubtasks?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiSuggestion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   column?: Prisma.ColumnUpdateOneRequiredWithoutCardsNestedInput
@@ -345,6 +405,10 @@ export type CardUncheckedUpdateInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   position?: Prisma.IntFieldUpdateOperationsInput | number
   completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  priority?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiSubtasks?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiSuggestion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   columnId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -357,6 +421,10 @@ export type CardCreateManyInput = {
   description?: string | null
   position: number
   completed?: boolean
+  dueDate?: Date | string | null
+  priority?: string | null
+  aiSubtasks?: string | null
+  aiSuggestion?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   columnId: string
@@ -368,6 +436,10 @@ export type CardUpdateManyMutationInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   position?: Prisma.IntFieldUpdateOperationsInput | number
   completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  priority?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiSubtasks?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiSuggestion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -378,6 +450,10 @@ export type CardUncheckedUpdateManyInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   position?: Prisma.IntFieldUpdateOperationsInput | number
   completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  priority?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiSubtasks?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiSuggestion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   columnId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -399,6 +475,10 @@ export type CardCountOrderByAggregateInput = {
   description?: Prisma.SortOrder
   position?: Prisma.SortOrder
   completed?: Prisma.SortOrder
+  dueDate?: Prisma.SortOrder
+  priority?: Prisma.SortOrder
+  aiSubtasks?: Prisma.SortOrder
+  aiSuggestion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   columnId?: Prisma.SortOrder
@@ -414,6 +494,10 @@ export type CardMaxOrderByAggregateInput = {
   description?: Prisma.SortOrder
   position?: Prisma.SortOrder
   completed?: Prisma.SortOrder
+  dueDate?: Prisma.SortOrder
+  priority?: Prisma.SortOrder
+  aiSubtasks?: Prisma.SortOrder
+  aiSuggestion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   columnId?: Prisma.SortOrder
@@ -425,6 +509,10 @@ export type CardMinOrderByAggregateInput = {
   description?: Prisma.SortOrder
   position?: Prisma.SortOrder
   completed?: Prisma.SortOrder
+  dueDate?: Prisma.SortOrder
+  priority?: Prisma.SortOrder
+  aiSubtasks?: Prisma.SortOrder
+  aiSuggestion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   columnId?: Prisma.SortOrder
@@ -501,6 +589,10 @@ export type CardCreateWithoutColumnInput = {
   description?: string | null
   position: number
   completed?: boolean
+  dueDate?: Date | string | null
+  priority?: string | null
+  aiSubtasks?: string | null
+  aiSuggestion?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   labels?: Prisma.CardLabelCreateNestedManyWithoutCardInput
@@ -512,6 +604,10 @@ export type CardUncheckedCreateWithoutColumnInput = {
   description?: string | null
   position: number
   completed?: boolean
+  dueDate?: Date | string | null
+  priority?: string | null
+  aiSubtasks?: string | null
+  aiSuggestion?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   labels?: Prisma.CardLabelUncheckedCreateNestedManyWithoutCardInput
@@ -552,6 +648,10 @@ export type CardScalarWhereInput = {
   description?: Prisma.StringNullableFilter<"Card"> | string | null
   position?: Prisma.IntFilter<"Card"> | number
   completed?: Prisma.BoolFilter<"Card"> | boolean
+  dueDate?: Prisma.DateTimeNullableFilter<"Card"> | Date | string | null
+  priority?: Prisma.StringNullableFilter<"Card"> | string | null
+  aiSubtasks?: Prisma.StringNullableFilter<"Card"> | string | null
+  aiSuggestion?: Prisma.StringNullableFilter<"Card"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Card"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Card"> | Date | string
   columnId?: Prisma.StringFilter<"Card"> | string
@@ -563,6 +663,10 @@ export type CardCreateWithoutLabelsInput = {
   description?: string | null
   position: number
   completed?: boolean
+  dueDate?: Date | string | null
+  priority?: string | null
+  aiSubtasks?: string | null
+  aiSuggestion?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   column: Prisma.ColumnCreateNestedOneWithoutCardsInput
@@ -574,6 +678,10 @@ export type CardUncheckedCreateWithoutLabelsInput = {
   description?: string | null
   position: number
   completed?: boolean
+  dueDate?: Date | string | null
+  priority?: string | null
+  aiSubtasks?: string | null
+  aiSuggestion?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   columnId: string
@@ -601,6 +709,10 @@ export type CardUpdateWithoutLabelsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   position?: Prisma.IntFieldUpdateOperationsInput | number
   completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  priority?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiSubtasks?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiSuggestion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   column?: Prisma.ColumnUpdateOneRequiredWithoutCardsNestedInput
@@ -612,6 +724,10 @@ export type CardUncheckedUpdateWithoutLabelsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   position?: Prisma.IntFieldUpdateOperationsInput | number
   completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  priority?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiSubtasks?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiSuggestion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   columnId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -623,6 +739,10 @@ export type CardCreateManyColumnInput = {
   description?: string | null
   position: number
   completed?: boolean
+  dueDate?: Date | string | null
+  priority?: string | null
+  aiSubtasks?: string | null
+  aiSuggestion?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -633,6 +753,10 @@ export type CardUpdateWithoutColumnInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   position?: Prisma.IntFieldUpdateOperationsInput | number
   completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  priority?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiSubtasks?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiSuggestion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   labels?: Prisma.CardLabelUpdateManyWithoutCardNestedInput
@@ -644,6 +768,10 @@ export type CardUncheckedUpdateWithoutColumnInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   position?: Prisma.IntFieldUpdateOperationsInput | number
   completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  priority?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiSubtasks?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiSuggestion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   labels?: Prisma.CardLabelUncheckedUpdateManyWithoutCardNestedInput
@@ -655,6 +783,10 @@ export type CardUncheckedUpdateManyWithoutColumnInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   position?: Prisma.IntFieldUpdateOperationsInput | number
   completed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  priority?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiSubtasks?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiSuggestion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -696,6 +828,10 @@ export type CardSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   description?: boolean
   position?: boolean
   completed?: boolean
+  dueDate?: boolean
+  priority?: boolean
+  aiSubtasks?: boolean
+  aiSuggestion?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   columnId?: boolean
@@ -710,6 +846,10 @@ export type CardSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   description?: boolean
   position?: boolean
   completed?: boolean
+  dueDate?: boolean
+  priority?: boolean
+  aiSubtasks?: boolean
+  aiSuggestion?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   columnId?: boolean
@@ -722,6 +862,10 @@ export type CardSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   description?: boolean
   position?: boolean
   completed?: boolean
+  dueDate?: boolean
+  priority?: boolean
+  aiSubtasks?: boolean
+  aiSuggestion?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   columnId?: boolean
@@ -734,12 +878,16 @@ export type CardSelectScalar = {
   description?: boolean
   position?: boolean
   completed?: boolean
+  dueDate?: boolean
+  priority?: boolean
+  aiSubtasks?: boolean
+  aiSuggestion?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   columnId?: boolean
 }
 
-export type CardOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "description" | "position" | "completed" | "createdAt" | "updatedAt" | "columnId", ExtArgs["result"]["card"]>
+export type CardOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "description" | "position" | "completed" | "dueDate" | "priority" | "aiSubtasks" | "aiSuggestion" | "createdAt" | "updatedAt" | "columnId", ExtArgs["result"]["card"]>
 export type CardInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   column?: boolean | Prisma.ColumnDefaultArgs<ExtArgs>
   labels?: boolean | Prisma.Card$labelsArgs<ExtArgs>
@@ -764,6 +912,10 @@ export type $CardPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     description: string | null
     position: number
     completed: boolean
+    dueDate: Date | null
+    priority: string | null
+    aiSubtasks: string | null
+    aiSuggestion: string | null
     createdAt: Date
     updatedAt: Date
     columnId: string
@@ -1197,6 +1349,10 @@ export interface CardFieldRefs {
   readonly description: Prisma.FieldRef<"Card", 'String'>
   readonly position: Prisma.FieldRef<"Card", 'Int'>
   readonly completed: Prisma.FieldRef<"Card", 'Boolean'>
+  readonly dueDate: Prisma.FieldRef<"Card", 'DateTime'>
+  readonly priority: Prisma.FieldRef<"Card", 'String'>
+  readonly aiSubtasks: Prisma.FieldRef<"Card", 'String'>
+  readonly aiSuggestion: Prisma.FieldRef<"Card", 'String'>
   readonly createdAt: Prisma.FieldRef<"Card", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Card", 'DateTime'>
   readonly columnId: Prisma.FieldRef<"Card", 'String'>

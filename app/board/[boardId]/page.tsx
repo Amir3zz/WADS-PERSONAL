@@ -38,6 +38,10 @@ export default async function BoardPage({ params }: BoardPageProps) {
               description: true,
               completed: true,
               position: true,
+              dueDate: true,
+              priority: true,
+              aiSubtasks: true,
+              aiSuggestion: true,
               createdAt: true,
               updatedAt: true,
             },
@@ -50,6 +54,30 @@ export default async function BoardPage({ params }: BoardPageProps) {
   if (!board) {
     notFound();
   }
+
+  const serializedBoard = {
+    id: board.id,
+    title: board.title,
+    description: board.description,
+    columns: board.columns.map((column) => ({
+      id: column.id,
+      title: column.title,
+      position: column.position,
+      cards: column.cards.map((card) => ({
+        id: card.id,
+        title: card.title,
+        description: card.description,
+        completed: card.completed,
+        position: card.position,
+        dueDate: card.dueDate ? card.dueDate.toISOString() : null,
+        priority: card.priority as "HIGH" | "MEDIUM" | "LOW" | null,
+        aiSubtasks: card.aiSubtasks,
+        aiSuggestion: card.aiSuggestion,
+        createdAt: card.createdAt.toISOString(),
+        updatedAt: card.updatedAt.toISOString(),
+      })),
+    })),
+  };
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -64,17 +92,17 @@ export default async function BoardPage({ params }: BoardPageProps) {
 
           <div className="min-w-0">
             <h1 className="truncate text-2xl font-semibold tracking-tight">
-              {board.title}
+              {serializedBoard.title}
             </h1>
             <p className="truncate text-sm text-muted-foreground">
-              {board.description || "Your study board"}
+              {serializedBoard.description || "Your study board"}
             </p>
           </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <KanbanBoard board={board} />
+        <KanbanBoard board={serializedBoard} />
       </main>
     </div>
   );

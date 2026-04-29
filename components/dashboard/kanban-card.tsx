@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Pencil, Trash2, Save, X } from "lucide-react";
 import { toast } from "sonner";
@@ -14,7 +14,65 @@ type KanbanCardProps = {
     description: string | null;
     completed: boolean;
     position: number;
+    dueDate: string | null;
+    createdAt: string;
+    updatedAt: string;
+    priority: "HIGH" | "MEDIUM" | "LOW" | null;
+    aiSubtasks: string | null;
+    aiSuggestion: string | null;
   };
+};
+
+function toDateTimeLocalValue(value: string | null) {
+  if (!value) return "";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const pad = (n: number) => String(n).padStart(2, "0");
+
+  return [
+    date.getFullYear(),
+    "-",
+    pad(date.getMonth() + 1),
+    "-",
+    pad(date.getDate()),
+    "T",
+    pad(date.getHours()),
+    ":",
+    pad(date.getMinutes()),
+  ].join("");
+}
+
+function formatDisplayDate(value: string | null) {
+  if (!value) return "";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  return new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
+}
+
+function parseSubtasks(value: string | null): string[] {
+  if (!value) return [];
+
+  try {
+    const parsed = JSON.parse(value);
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed.map((item) => String(item).trim()).filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+const priorityStyles: Record<NonNullable<KanbanCardProps["card"]["priority"]>, string> = {
+  HIGH: "bg-red-500/10 text-red-700",
+  MEDIUM: "bg-amber-500/10 text-amber-700",
+  LOW: "bg-emerald-500/10 text-emerald-700",
 };
 
 export default function KanbanCard({ card }: KanbanCardProps) {
@@ -23,7 +81,10 @@ export default function KanbanCard({ card }: KanbanCardProps) {
   const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState(card.title);
   const [description, setDescription] = useState(card.description ?? "");
+  const [dueDate, setDueDate] = useState(toDateTimeLocalValue(card.dueDate));
   const [completed, setCompleted] = useState(card.completed);
+
+  const aiSubtasks = useMemo(() => parseSubtasks(card.aiSubtasks), [card.aiSubtasks]);
 
   const handleDelete = async () => {
     const ok = window.confirm(`Delete "${card.title}"?`);
@@ -68,6 +129,7 @@ export default function KanbanCard({ card }: KanbanCardProps) {
         body: JSON.stringify({
           title: cleanTitle,
           description: description.trim(),
+          dueDate: dueDate || null,
           completed,
         }),
       });
@@ -96,25 +158,70 @@ export default function KanbanCard({ card }: KanbanCardProps) {
           <div className="mb-2 flex items-start justify-between gap-3">
             <div className="min-w-0">
               <p className="font-medium leading-snug">{card.title}</p>
+
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                {card.priority ? (
+                  <span
+                    className={`rounded-full px-2 py-1 text-xs font-medium ${
+                      priorityStyles[card.priority]
+                    }`}
+                  >
+                    {card.priority} priority
+                  </span>
+                ) : null}
+
+                {card.dueDate ? (
+                  <span className="rounded-full bg-sky-500/10 px-2 py-1 text-xs font-medium text-sky-700">
+                    Due {formatDisplayDate(card.dueDate)}
+                  </span>
+                ) : null}
+
+                {card.completed ? (
+                  <span className="rounded-full bg-emerald-500/10 px-2 py-1 text-xs font-medium text-emerald-700">
+                    Done
+                  </span>
+                ) : (
+                  <span className="rounded-full bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">
+                    Open
+                  </span>
+                )}
+              </div>
+
               {card.description ? (
-                <p className="mt-1 line-clamp-3 text-sm text-muted-foreground">
+                <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">
                   {card.description}
                 </p>
               ) : null}
             </div>
-
-            {card.completed ? (
-              <span className="rounded-full bg-emerald-500/10 px-2 py-1 text-xs font-medium text-emerald-700">
-                Done
-              </span>
-            ) : (
-              <span className="rounded-full bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">
-                Open
-              </span>
-            )}
           </div>
 
-          <div className="flex items-center justify-end gap-2">
+          {aiSubtasks.length > 0 ? (
+            <div className="mt-3 rounded-xl bg-muted/40 p-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                AI subtasks
+              </p>
+              <ul className="mt-2 space-y-1 text-sm">
+                {aiSubtasks.map((task, index) => (
+                  <li key={`${task}-${index}`} className="flex gap-2">
+                    <span>•</span>
+                    <span>{task}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
+          {card.aiSuggestion ? (
+            <p className="mt-3 rounded-xl border bg-muted/20 p-3 text-sm text-muted-foreground">
+              {card.aiSuggestion}
+            </p>
+          ) : null}
+
+          <p className="mt-3 text-xs text-muted-foreground">
+            Created {formatDisplayDate(card.createdAt)}
+          </p>
+
+          <div className="mt-3 flex items-center justify-end gap-2">
             <Button
               type="button"
               variant="ghost"
@@ -123,6 +230,7 @@ export default function KanbanCard({ card }: KanbanCardProps) {
               onClick={() => {
                 setTitle(card.title);
                 setDescription(card.description ?? "");
+                setDueDate(toDateTimeLocalValue(card.dueDate));
                 setCompleted(card.completed);
                 setEditing(true);
               }}
@@ -144,6 +252,19 @@ export default function KanbanCard({ card }: KanbanCardProps) {
         </>
       ) : (
         <form onSubmit={handleSave} className="space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="text-base font-semibold">Edit card</h3>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setEditing(false)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+
           <div>
             <label className="mb-1 block text-sm font-medium">Title</label>
             <Input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={120} />
@@ -154,8 +275,17 @@ export default function KanbanCard({ card }: KanbanCardProps) {
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              maxLength={300}
+              maxLength={500}
               className="min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium">Due date and time</label>
+            <Input
+              type="datetime-local"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
             />
           </div>
 

@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
   const idToken = authorization.split("Bearer ")[1];
 
   try {
-    const decodedToken = await adminAuth().verifyIdToken(idToken, true);
+    const decodedToken = await adminAuth().verifyIdToken(idToken);
 
     const uid = decodedToken.uid;
     const email = decodedToken.email;

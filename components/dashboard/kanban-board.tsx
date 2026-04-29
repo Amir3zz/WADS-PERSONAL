@@ -16,6 +16,12 @@ type KanbanBoardProps = {
         description: string | null;
         completed: boolean;
         position: number;
+        dueDate: string | null;
+        createdAt: string;
+        updatedAt: string;
+        priority: "HIGH" | "MEDIUM" | "LOW" | null;
+        aiSubtasks: string | null;
+        aiSuggestion: string | null;
       }>;
     }>;
   };

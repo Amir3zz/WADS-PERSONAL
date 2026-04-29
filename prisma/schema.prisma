@@ -49,7 +49,7 @@ model Account {
   accessToken           String?
   refreshToken          String?
   accessTokenExpiresAt  DateTime?
-  refreshTokenExpiresAt DateTime?
+  refreshTokenExpiresAt  DateTime?
   scope                 String?
   idToken               String?
   password              String?
@@ -112,12 +112,17 @@ model Column {
 }
 
 model Card {
-  id          String  @id @default(cuid())
+  id          String   @id @default(cuid())
   title       String
   description String?
 
   position  Int // order inside column
   completed Boolean @default(false)
+
+  dueDate      DateTime?
+  priority     String?  // HIGH | MEDIUM | LOW
+  aiSubtasks   String?  // JSON string
+  aiSuggestion String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
