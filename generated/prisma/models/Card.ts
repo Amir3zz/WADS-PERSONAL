@@ -569,6 +569,10 @@ export type CardUncheckedUpdateManyWithoutColumnNestedInput = {
   deleteMany?: Prisma.CardScalarWhereInput | Prisma.CardScalarWhereInput[]
 }
 
+export type NullableDateTimeFieldUpdateOperationsInput = {
+  set?: Date | string | null
+}
+
 export type CardCreateNestedOneWithoutLabelsInput = {
   create?: Prisma.XOR<Prisma.CardCreateWithoutLabelsInput, Prisma.CardUncheckedCreateWithoutLabelsInput>
   connectOrCreate?: Prisma.CardCreateOrConnectWithoutLabelsInput

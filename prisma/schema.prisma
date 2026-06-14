@@ -15,6 +15,7 @@ datasource db {
 
 model User {
   id            String   @id @default(cuid())
+  firebaseUid   String   @unique
   email         String   @unique
   name          String?
   image         String?
@@ -22,50 +23,11 @@ model User {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  sessions Session[]
-  accounts Account[]
-  todos    Todo[]
-  boards   Board[]
-}
+  todos         Todo[]
+  boards        Board[]
+  studySessions StudySession[]
 
-model Session {
-  id        String   @id @default(cuid())
-  userId    String
-  token     String   @unique
-  expiresAt DateTime
-  ipAddress String?
-  userAgent String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model Account {
-  id                    String    @id @default(cuid())
-  userId                String
-  accountId             String
-  providerId            String
-  accessToken           String?
-  refreshToken          String?
-  accessTokenExpiresAt  DateTime?
-  refreshTokenExpiresAt  DateTime?
-  scope                 String?
-  idToken               String?
-  password              String?
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model Verification {
-  id         String   @id @default(cuid())
-  identifier String
-  value      String
-  expiresAt  DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  @@index([email])
 }
 
 model Todo {
@@ -78,30 +40,32 @@ model Todo {
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, completed])
 }
 
 model Board {
-  id          String  @id @default(cuid())
+  id          String   @id @default(cuid())
   title       String
   description String?
   icon        String?
   color       String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   columns Column[]
   labels  Label[]
+
+  @@index([userId])
 }
 
 model Column {
-  id       String @id @default(cuid())
-  title    String
-  position Int // order of columns (0,1,2...)
-
+  id        String   @id @default(cuid())
+  title     String
+  position  Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -109,44 +73,47 @@ model Column {
   board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
 
   cards Card[]
+
+  @@index([boardId, position])
 }
 
 model Card {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-
-  position  Int // order inside column
-  completed Boolean @default(false)
-
+  id           String    @id @default(cuid())
+  title        String
+  description  String?
+  position     Int
+  completed    Boolean   @default(false)
   dueDate      DateTime?
-  priority     String?  // HIGH | MEDIUM | LOW
-  aiSubtasks   String?  // JSON string
+  priority     String? // HIGH | MEDIUM | LOW
+  aiSubtasks   String? // JSON string
   aiSuggestion String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   columnId String
   column   Column @relation(fields: [columnId], references: [id], onDelete: Cascade)
 
   labels CardLabel[]
+
+  @@index([columnId, position])
+  @@index([dueDate])
 }
 
 model Label {
-  id    String @id @default(cuid())
-  name  String
-  color String // hex like "#22c55e"
-
+  id      String @id @default(cuid())
+  name    String
+  color   String
   boardId String
-  board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
 
+  board Board       @relation(fields: [boardId], references: [id], onDelete: Cascade)
   cards CardLabel[]
+
+  @@unique([boardId, name])
+  @@index([boardId])
 }
 
 model CardLabel {
-  id String @id @default(cuid())
-
+  id      String @id @default(cuid())
   cardId  String
   labelId String
 
@@ -154,4 +121,21 @@ model CardLabel {
   label Label @relation(fields: [labelId], references: [id], onDelete: Cascade)
 
   @@unique([cardId, labelId])
+}
+
+model StudySession {
+  id              String    @id @default(cuid())
+  title           String
+  subject         String?
+  notes           String?
+  startedAt       DateTime
+  endedAt         DateTime?
+  durationMinutes Int?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, startedAt])
 }

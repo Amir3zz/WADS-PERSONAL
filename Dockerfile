@@ -1,17 +1,17 @@
-FROM node:22-slim
+FROM node:22-slim AS base
 
 WORKDIR /app
-
 ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends openssl ca-certificates \
   && rm -rf /var/lib/apt/lists/*
 
+FROM base AS deps
 COPY package*.json ./
 RUN npm ci
 
-COPY . .
+FROM base AS builder
 
 ARG DATABASE_URL
 ARG NEXT_PUBLIC_FIREBASE_API_KEY
@@ -26,6 +26,9 @@ ARG FIREBASE_PRIVATE_KEY
 ARG BETTER_AUTH_SECRET
 ARG BETTER_AUTH_URL
 ARG NEXT_PUBLIC_BETTER_AUTH_URL
+ARG OPENAI_API_KEY
+ARG OPENAI_MODEL
+ARG USE_LOCAL_AI
 
 ENV DATABASE_URL=$DATABASE_URL
 ENV NEXT_PUBLIC_FIREBASE_API_KEY=$NEXT_PUBLIC_FIREBASE_API_KEY
@@ -40,10 +43,26 @@ ENV FIREBASE_PRIVATE_KEY=$FIREBASE_PRIVATE_KEY
 ENV BETTER_AUTH_SECRET=$BETTER_AUTH_SECRET
 ENV BETTER_AUTH_URL=$BETTER_AUTH_URL
 ENV NEXT_PUBLIC_BETTER_AUTH_URL=$NEXT_PUBLIC_BETTER_AUTH_URL
+ENV OPENAI_API_KEY=$OPENAI_API_KEY
+ENV OPENAI_MODEL=$OPENAI_MODEL
+ENV USE_LOCAL_AI=$USE_LOCAL_AI
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
 
 RUN npx prisma generate
 RUN npm run build
 
+FROM base AS runner
+ENV NODE_ENV=production
+
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/generated ./generated
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/package.json ./package.json
+
 EXPOSE 3000
 
-CMD ["sh", "-c", "npx prisma db push && npm run start"]
+CMD ["sh", "-c", "npx prisma migrate deploy && node server.js"]

@@ -7,14 +7,13 @@ Institution: BINUS University International
 Project Title: Boardside (a Kanban-Based Study Planner)  
 Project Domain: Study Planner & Productivity Tracker  
 Class: L4CC  
-Repository: https://github.com/AimKill02/WADS-Final-Project  
+Repository: https://github.com/Amir3zz/WADS-PERSONAL 
 Group Members:
 
 | Name | Student ID | Role | GitHub Username |
 | :---- | :---- | :---- | :---- |
 | Raphael Harloverin Gunarso | 2902641824 | \- | Amir3zz |
 | Kevin Jonathan Saerang | 2802536423 | \- | Aimkill02 |
-| Bagaskara leo  | 2802553165 | \- | bagaskara888 |
 
 **2\. Project Overview**
 
@@ -86,12 +85,7 @@ USER (Browser)
   v  
 Frontend (Next.js)  
 \- Kanban Board (core)  
-\- Drag & Drop  
 \- Card Progress
-
-Board Modes  
-\- Productivity Mode  
-\- Study Mode
 
 Global UI  
 \- Top Bar (Timer, Notifications, Account)  
@@ -255,3 +249,45 @@ Security
 * Secrets managed through environment variables  
 * HTTPS enforced in production  
 * No secrets committed to version control
+
+## Installation
+
+### Prerequisites
+- Node.js 22+
+- npm
+- PostgreSQL running locally, or Docker Desktop if you want to use Docker
+
+### 1. Clone the repository
+
+git clone <https://github.com/Amir3zz/WADS-PERSONAL>
+cd <your-project-folder>
+
+### 2. Install dependencies
+npm install
+
+### 3. Set up environment varibles
+
+Create a local env file for non-docker testing
+
+Use:
+-`.env.local` for local Next.js development
+-`.env.docker` for Docker Compose
+
+### 4. Run Prisma
+
+If first time running:
+`npx prisma generate`
+`npx prisma migrate dev`
+
+### 5. Start the app
+
+`npm run dev`
+
+### 6. Docker setup
+
+`docker compose up --build`
+
+For production build:
+`npm run build`
+`npm run start`
+

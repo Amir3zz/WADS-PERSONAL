@@ -9,13 +9,11 @@
  * 🟢 You can import this file directly.
  */
 export type * from './models/User'
-export type * from './models/Session'
-export type * from './models/Account'
-export type * from './models/Verification'
 export type * from './models/Todo'
 export type * from './models/Board'
 export type * from './models/Column'
 export type * from './models/Card'
 export type * from './models/Label'
 export type * from './models/CardLabel'
+export type * from './models/StudySession'
 export type * from './commonInputTypes'
