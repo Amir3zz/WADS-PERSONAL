@@ -57,3 +57,18 @@ export type CardLabel = Prisma.CardLabelModel
  * 
  */
 export type StudySession = Prisma.StudySessionModel
+/**
+ * Model Account
+ * 
+ */
+export type Account = Prisma.AccountModel
+/**
+ * Model Session
+ * 
+ */
+export type Session = Prisma.SessionModel
+/**
+ * Model Verification
+ * 
+ */
+export type Verification = Prisma.VerificationModel

@@ -1,19 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import { auth } from "@/lib/firebase";
-import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
-import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { auth } from "@/lib/firebase";
+import {
+  GoogleAuthProvider,
+  reload,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+} from "firebase/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { reload } from "firebase/auth";
-import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -28,25 +37,30 @@ export default function LoginPage() {
         Authorization: `Bearer ${idToken}`,
       },
     });
+
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      throw new Error(data.error ?? "Failed to create session");
+      throw new Error(data.message ?? data.error ?? "Failed to create session");
     }
   };
 
   const handleGoogleLogin = async () => {
     try {
       setLoading(true);
+
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
       const idToken = await result.user.getIdToken();
+
       await createFirebaseSession(idToken);
+
       toast.success("Login successful");
       router.push("/dashboard");
       router.refresh();
     } catch (err: unknown) {
       console.error(err);
-      const message = err instanceof Error ? err.message : "Google sign-in failed.";
+      const message =
+        err instanceof Error ? err.message : "Google sign-in failed.";
       toast.error(message);
     } finally {
       setLoading(false);
@@ -55,10 +69,16 @@ export default function LoginPage() {
 
   const validateEmailPassword = (): string | null => {
     const trimmedEmail = email.trim();
+
     if (!trimmedEmail) return "Email is required.";
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(trimmedEmail)) return "Please enter a valid email address.";
+    if (!emailRegex.test(trimmedEmail)) {
+      return "Please enter a valid email address.";
+    }
+
     if (!password) return "Password is required.";
+
     return null;
   };
 
@@ -88,15 +108,13 @@ export default function LoginPage() {
         return;
       }
 
-      const idToken = await result.user.getIdToken();
+      const idToken = await result.user.getIdToken(true);
 
       await createFirebaseSession(idToken);
 
       toast.success("Login successful");
-
       router.push("/dashboard");
       router.refresh();
-
     } catch (err: unknown) {
       console.error(err);
       toast.error("Invalid email or password.");
@@ -109,8 +127,12 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-background to-muted/30 px-4 py-10">
       <Card className="w-full max-w-md border-0 shadow-xl shadow-primary/5 sm:border">
         <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl font-semibold tracking-tight">Sign in to your account</CardTitle>
-          <CardDescription>Use your email and password, or continue with Google.</CardDescription>
+          <CardTitle className="text-2xl font-semibold tracking-tight">
+            Sign in to your account
+          </CardTitle>
+          <CardDescription>
+            Use your email and password, or continue with Google.
+          </CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-4">
@@ -144,6 +166,7 @@ export default function LoginPage() {
                 className="h-10"
               />
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
@@ -157,7 +180,12 @@ export default function LoginPage() {
                 className="h-10"
               />
             </div>
-            <Button type="submit" className="w-full h-10 font-medium" disabled={loading}>
+
+            <Button
+              type="submit"
+              className="w-full h-10 font-medium"
+              disabled={loading}
+            >
               {loading ? "Signing in…" : "Sign in with Email"}
             </Button>
           </form>
@@ -166,7 +194,10 @@ export default function LoginPage() {
         <CardFooter className="flex flex-col gap-1">
           <p className="text-center text-sm text-muted-foreground">
             Don&apos;t have an account?{" "}
-            <Link href="/register" className="font-medium text-primary underline-offset-4 hover:underline">
+            <Link
+              href="/register"
+              className="font-medium text-primary underline-offset-4 hover:underline"
+            >
               Sign up
             </Link>
           </p>

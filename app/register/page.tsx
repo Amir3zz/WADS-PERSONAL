@@ -3,13 +3,24 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+  updateProfile,
+} from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { getAvatarUrl } from "@/lib/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 
@@ -25,20 +36,24 @@ export default function RegisterPage() {
 
   const validate = (): string | null => {
     const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
 
     if (!trimmedName) return "Name is required.";
-    if (!email.trim()) return "Email is required.";
+    if (!trimmedEmail) return "Email is required.";
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!emailRegex.test(email))
+    if (!emailRegex.test(trimmedEmail)) {
       return "Please enter a valid email address.";
+    }
 
-    if (password.length < 8)
+    if (password.length < 8) {
       return "Password must be at least 8 characters.";
+    }
 
-    if (password !== confirmPassword)
+    if (password !== confirmPassword) {
       return "Passwords do not match.";
+    }
 
     return null;
   };
@@ -56,13 +71,20 @@ export default function RegisterPage() {
     try {
       setLoading(true);
 
-      const image = getAvatarUrl(name);
+      const trimmedName = name.trim();
+      const trimmedEmail = email.trim();
+      const image = getAvatarUrl(trimmedName);
 
       const userCredential = await createUserWithEmailAndPassword(
         auth,
-        email.trim(),
+        trimmedEmail,
         password
       );
+
+      await updateProfile(userCredential.user, {
+        displayName: trimmedName,
+        photoURL: image,
+      });
 
       await sendEmailVerification(userCredential.user);
 
@@ -91,7 +113,6 @@ export default function RegisterPage() {
 
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
-
             <div className="space-y-2">
               <Label htmlFor="name">Name</Label>
               <Input
@@ -149,7 +170,6 @@ export default function RegisterPage() {
             >
               {loading ? "Creating account…" : "Create account"}
             </Button>
-
           </CardContent>
 
           <CardFooter className="flex flex-col gap-4 mt-4">
@@ -163,7 +183,6 @@ export default function RegisterPage() {
               </Link>
             </p>
           </CardFooter>
-
         </form>
       </Card>
     </div>

@@ -8,14 +8,13 @@ export async function POST(req: NextRequest) {
   if (!authorization?.startsWith("Bearer ")) {
     return NextResponse.json(
       { success: false, message: "Unauthorized" },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
   const idToken = authorization.replace("Bearer ", "");
 
   try {
-    // Verify Firebase ID token
     const decodedToken = await adminAuth().verifyIdToken(idToken);
 
     const uid = decodedToken.uid;
@@ -24,24 +23,19 @@ export async function POST(req: NextRequest) {
     if (!email) {
       return NextResponse.json(
         { success: false, message: "Email not found in Firebase token." },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
-    // Get the latest profile information from Firebase
     const userRecord = await adminAuth().getUser(uid);
 
-    const name =
-      userRecord.displayName ??
-      decodedToken.name ??
-      null;
+    const name = userRecord.displayName ?? decodedToken.name ?? null;
 
     const image =
       userRecord.photoURL ??
       (decodedToken as { picture?: string }).picture ??
       null;
 
-    // Create or update the user in Prisma
     const user = await prisma.user.upsert({
       where: {
         firebaseUid: uid,
@@ -61,7 +55,6 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Store session cookie
     const response = NextResponse.json({
       success: true,
       userId: user.id,
@@ -76,14 +69,16 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (error) {
-    console.error("Firebase authentication error:", error);
+    console.dir(error, {
+      depth: null,
+    });
 
     return NextResponse.json(
       {
         success: false,
         message: "Authentication failed.",
       },
-      { status: 401 }
+      { status: 401 },
     );
   }
 }
