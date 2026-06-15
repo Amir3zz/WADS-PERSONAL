@@ -1,15 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Script from "next/script";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/lib/firebase";
 import {
   GoogleAuthProvider,
-  getRedirectResult,
   reload,
+  signInWithCredential,
   signInWithEmailAndPassword,
-  signInWithRedirect,
 } from "firebase/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,12 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
+
+declare global {
+  interface Window {
+    google?: any;
+  }
+}
 
 async function createFirebaseSession(idToken: string) {
   const res = await fetch("/api/auth/firebase", {
@@ -44,47 +50,79 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleReady, setGoogleReady] = useState(false);
+
+  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+
+  const initializeGoogleSignIn = () => {
+    if (!googleClientId || !window.google?.accounts?.id) {
+      return;
+    }
+
+    window.google.accounts.id.initialize({
+      client_id: googleClientId,
+      callback: async (response: { credential?: string }) => {
+        try {
+          if (!response.credential) {
+            throw new Error("Google sign-in did not return a credential.");
+          }
+
+          const firebaseCredential = GoogleAuthProvider.credential(
+            response.credential,
+          );
+
+          const result = await signInWithCredential(auth, firebaseCredential);
+          const idToken = await result.user.getIdToken(true);
+
+          await createFirebaseSession(idToken);
+
+          toast.success("Login successful");
+          router.push("/dashboard");
+          router.refresh();
+        } catch (err: unknown) {
+          console.error(err);
+          const message =
+            err instanceof Error ? err.message : "Google sign-in failed.";
+          toast.error(message);
+        } finally {
+          setLoading(false);
+        }
+      },
+    });
+
+    setGoogleReady(true);
+  };
 
   useEffect(() => {
-    let cancelled = false;
-
-    const handleRedirectResult = async () => {
-      try {
-        const result = await getRedirectResult(auth);
-
-        if (!result?.user || cancelled) {
-          return;
-        }
-
-        const idToken = await result.user.getIdToken(true);
-        await createFirebaseSession(idToken);
-
-        toast.success("Login successful");
-        router.push("/dashboard");
-        router.refresh();
-      } catch (err: unknown) {
-        if (cancelled) return;
-
-        console.error(err);
-        const message =
-          err instanceof Error ? err.message : "Google sign-in failed.";
-        toast.error(message);
-      }
-    };
-
-    void handleRedirectResult();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [router]);
+    if (window.google?.accounts?.id) {
+      initializeGoogleSignIn();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [googleClientId]);
 
   const handleGoogleLogin = async () => {
     try {
+      if (!googleClientId) {
+        toast.error("Missing Google client ID.");
+        return;
+      }
+
+      if (!window.google?.accounts?.id) {
+        toast.error("Google sign-in is still loading. Please try again.");
+        return;
+      }
+
       setLoading(true);
 
-      const provider = new GoogleAuthProvider();
-      await signInWithRedirect(auth, provider);
+      window.google.accounts.id.prompt((notification: any) => {
+        if (
+          notification?.isNotDisplayed?.() ||
+          notification?.isSkippedMoment?.()
+        ) {
+          setLoading(false);
+          toast.error("Google sign-in could not start. Please try again.");
+        }
+      });
     } catch (err: unknown) {
       console.error(err);
       const message =
@@ -151,6 +189,12 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-background to-muted/30 px-4 py-10">
+      <Script
+        src="https://accounts.google.com/gsi/client"
+        strategy="afterInteractive"
+        onLoad={initializeGoogleSignIn}
+      />
+
       <Card className="w-full max-w-md border-0 shadow-xl shadow-primary/5 sm:border">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-2xl font-semibold tracking-tight">
@@ -167,7 +211,7 @@ export default function LoginPage() {
             variant="outline"
             className="w-full"
             onClick={handleGoogleLogin}
-            disabled={loading}
+            disabled={loading || !googleReady}
           >
             {loading ? "Processing…" : "Continue with Google"}
           </Button>
