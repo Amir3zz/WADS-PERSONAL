@@ -220,7 +220,7 @@ export type BoardGroupByOutputType = {
   _max: BoardMaxAggregateOutputType | null
 }
 
-type GetBoardGroupByPayload<T extends BoardGroupByArgs> = Prisma.PrismaPromise<
+export type GetBoardGroupByPayload<T extends BoardGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<BoardGroupByOutputType, T['by']> &
       {

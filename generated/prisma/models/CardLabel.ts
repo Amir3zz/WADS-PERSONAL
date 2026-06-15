@@ -144,7 +144,7 @@ export type CardLabelGroupByOutputType = {
   _max: CardLabelMaxAggregateOutputType | null
 }
 
-type GetCardLabelGroupByPayload<T extends CardLabelGroupByArgs> = Prisma.PrismaPromise<
+export type GetCardLabelGroupByPayload<T extends CardLabelGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<CardLabelGroupByOutputType, T['by']> &
       {

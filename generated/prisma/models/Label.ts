@@ -151,7 +151,7 @@ export type LabelGroupByOutputType = {
   _max: LabelMaxAggregateOutputType | null
 }
 
-type GetLabelGroupByPayload<T extends LabelGroupByArgs> = Prisma.PrismaPromise<
+export type GetLabelGroupByPayload<T extends LabelGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<LabelGroupByOutputType, T['by']> &
       {

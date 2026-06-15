@@ -199,7 +199,7 @@ export type ColumnGroupByOutputType = {
   _max: ColumnMaxAggregateOutputType | null
 }
 
-type GetColumnGroupByPayload<T extends ColumnGroupByArgs> = Prisma.PrismaPromise<
+export type GetColumnGroupByPayload<T extends ColumnGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<ColumnGroupByOutputType, T['by']> &
       {
