@@ -2,14 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  ChevronDown,
-  ChevronUp,
-  Pencil,
-  Save,
-  Trash2,
-  X,
-} from "lucide-react";
+import { ChevronDown, ChevronUp, Pencil, Save, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -82,7 +75,10 @@ function parseSubtasks(value: string | null): string[] {
   }
 }
 
-const priorityStyles: Record<NonNullable<KanbanCardProps["card"]["priority"]>, string> = {
+const priorityStyles: Record<
+  NonNullable<KanbanCardProps["card"]["priority"]>,
+  string
+> = {
   HIGH: "bg-red-500/10 text-red-700",
   MEDIUM: "bg-amber-500/10 text-amber-700",
   LOW: "bg-emerald-500/10 text-emerald-700",
@@ -106,7 +102,10 @@ export default function KanbanCard({
   const [dueDate, setDueDate] = useState(toDateTimeLocalValue(card.dueDate));
   const [completed, setCompleted] = useState(card.completed);
 
-  const aiSubtasks = useMemo(() => parseSubtasks(card.aiSubtasks), [card.aiSubtasks]);
+  const aiSubtasks = useMemo(
+    () => parseSubtasks(card.aiSubtasks),
+    [card.aiSubtasks],
+  );
 
   const handleDelete = async () => {
     const ok = window.confirm(`Delete "${card.title}"?`);
@@ -125,7 +124,9 @@ export default function KanbanCard({
       router.refresh();
     } catch (error) {
       console.error(error);
-      toast.error(error instanceof Error ? error.message : "Something went wrong");
+      toast.error(
+        error instanceof Error ? error.message : "Something went wrong",
+      );
     } finally {
       setLoading(false);
     }
@@ -167,7 +168,9 @@ export default function KanbanCard({
       router.refresh();
     } catch (error) {
       console.error(error);
-      toast.error(error instanceof Error ? error.message : "Something went wrong");
+      toast.error(
+        error instanceof Error ? error.message : "Something went wrong",
+      );
     } finally {
       setLoading(false);
     }
@@ -195,7 +198,9 @@ export default function KanbanCard({
           <div className="mb-2 flex items-start justify-between gap-3">
             <div className="min-w-0">
               <p
-                className={`font-medium leading-snug ${card.completed ? "text-blue-700 line-through dark:text-blue-300" : ""
+                className={`break-words whitespace-normal font-medium leading-snug ${card.completed
+                    ? "text-blue-700 line-through dark:text-blue-300"
+                    : ""
                   }`}
               >
                 {card.title}
@@ -229,14 +234,14 @@ export default function KanbanCard({
               </div>
 
               {card.description ? (
-                <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">
+                <p className="mt-2 break-words whitespace-normal text-sm text-muted-foreground">
                   {card.description}
                 </p>
               ) : null}
             </div>
           </div>
 
-          {(aiSubtasks.length > 0 || card.aiSuggestion) ? (
+          {aiSubtasks.length > 0 || card.aiSuggestion ? (
             <div className="mt-3 rounded-xl border bg-muted/20 p-3">
               <button
                 type="button"
@@ -272,7 +277,9 @@ export default function KanbanCard({
                         {aiSubtasks.map((task, index) => (
                           <li key={`${task}-${index}`} className="flex gap-2">
                             <span aria-hidden="true">•</span>
-                            <span>{task}</span>
+                            <span className="break-words whitespace-normal">
+                              {task}
+                            </span>
                           </li>
                         ))}
                       </ul>
@@ -284,7 +291,7 @@ export default function KanbanCard({
                       <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                         Suggestion
                       </p>
-                      <p className="mt-2 text-sm text-muted-foreground">
+                      <p className="mt-2 break-words whitespace-normal text-sm text-muted-foreground">
                         {card.aiSuggestion}
                       </p>
                     </div>
@@ -350,7 +357,10 @@ export default function KanbanCard({
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium" htmlFor={`card-title-${card.id}`}>
+            <label
+              className="mb-1 block text-sm font-medium"
+              htmlFor={`card-title-${card.id}`}
+            >
               Title
             </label>
             <Input
@@ -378,7 +388,10 @@ export default function KanbanCard({
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium" htmlFor={`card-due-${card.id}`}>
+            <label
+              className="mb-1 block text-sm font-medium"
+              htmlFor={`card-due-${card.id}`}
+            >
               Due date and time
             </label>
             <Input
@@ -389,7 +402,10 @@ export default function KanbanCard({
             />
           </div>
 
-          <label className="flex items-center gap-2 text-sm" htmlFor={`card-completed-${card.id}`}>
+          <label
+            className="flex items-center gap-2 text-sm"
+            htmlFor={`card-completed-${card.id}`}
+          >
             <input
               id={`card-completed-${card.id}`}
               type="checkbox"

@@ -60,12 +60,16 @@ export default function KanbanColumn({
   const [title, setTitle] = useState(column.title);
 
   const handleDelete = async () => {
-    const ok = window.confirm(`Delete column "${column.title}" and all cards inside it?`);
+    const ok = window.confirm(
+      `Delete column "${column.title}" and all cards inside it?`,
+    );
     if (!ok) return;
 
     try {
       setLoading(true);
-      const res = await fetch(`/api/columns/${column.id}`, { method: "DELETE" });
+      const res = await fetch(`/api/columns/${column.id}`, {
+        method: "DELETE",
+      });
       const data = await res.json();
 
       if (!res.ok) {
@@ -76,7 +80,9 @@ export default function KanbanColumn({
       router.refresh();
     } catch (error) {
       console.error(error);
-      toast.error(error instanceof Error ? error.message : "Something went wrong");
+      toast.error(
+        error instanceof Error ? error.message : "Something went wrong",
+      );
     } finally {
       setLoading(false);
     }
@@ -113,7 +119,9 @@ export default function KanbanColumn({
       router.refresh();
     } catch (error) {
       console.error(error);
-      toast.error(error instanceof Error ? error.message : "Something went wrong");
+      toast.error(
+        error instanceof Error ? error.message : "Something went wrong",
+      );
     } finally {
       setLoading(false);
     }
@@ -131,15 +139,19 @@ export default function KanbanColumn({
       onDragEnd={onDragEnd}
       aria-label={`Column ${column.title}`}
       aria-grabbed={dragging}
-      className={`w-[320px] shrink-0 ${dragging ? "cursor-grabbing opacity-60" : "cursor-grab"}`}
+      className={`w-[320px] shrink-0 min-w-0 ${dragging ? "cursor-grabbing opacity-60" : "cursor-grab"
+        }`}
     >
-      <Card className="h-full border-border/70 shadow-sm">
+      <Card className="h-full min-w-0 border-border/70 shadow-sm">
         <CardContent className="space-y-4 p-4">
           {!editing ? (
             <>
-              <div className="flex items-center justify-between gap-3">
-                <h3 className="text-lg font-semibold">{column.title}</h3>
-                <div className="flex items-center gap-2">
+              <div className="flex min-w-0 items-start justify-between gap-3">
+                <h3 className="min-w-0 break-words text-lg font-semibold leading-snug">
+                  {column.title}
+                </h3>
+
+                <div className="flex shrink-0 items-center gap-2">
                   <span
                     className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground"
                     aria-label={`${column.cards.length} cards in this column`}
@@ -178,7 +190,7 @@ export default function KanbanColumn({
               </div>
 
               <div
-                className="min-h-12 space-y-3"
+                className="min-h-12 space-y-3 min-w-0"
                 onDragOver={(event) => {
                   event.preventDefault();
                   event.dataTransfer.dropEffect = "move";
@@ -223,7 +235,10 @@ export default function KanbanColumn({
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium" htmlFor={`column-title-${column.id}`}>
+                <label
+                  className="mb-1 block text-sm font-medium"
+                  htmlFor={`column-title-${column.id}`}
+                >
                   Title
                 </label>
                 <Input
@@ -235,11 +250,7 @@ export default function KanbanColumn({
               </div>
 
               <div className="flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setEditing(false)}
-                >
+                <Button type="button" variant="outline" onClick={() => setEditing(false)}>
                   Cancel
                 </Button>
                 <Button type="submit" disabled={loading}>

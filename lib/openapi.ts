@@ -57,6 +57,7 @@ export const openApiSpec = {
     { name: "Cards" },
     { name: "Reorder" },
     { name: "AI" },
+    { name: "Study Sessions" },
     { name: "Account" },
   ],
   components: {
@@ -401,6 +402,59 @@ export const openApiSpec = {
           },
         },
         required: ["columns"],
+      },
+      StudySessionRecord: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          id: { type: "string" },
+          title: { type: "string" },
+          subject: { type: "string", nullable: true },
+          notes: { type: "string", nullable: true },
+          startedAt: { type: "string", format: "date-time" },
+          endedAt: { type: "string", format: "date-time", nullable: true },
+          durationMinutes: { type: "integer", nullable: true },
+          createdAt: { type: "string", format: "date-time" },
+          updatedAt: { type: "string", format: "date-time" },
+          userId: { type: "string" },
+        },
+        required: [
+          "id",
+          "title",
+          "subject",
+          "notes",
+          "startedAt",
+          "endedAt",
+          "durationMinutes",
+          "createdAt",
+          "updatedAt",
+          "userId",
+        ],
+      },
+      StudySessionCreateRequest: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          title: { type: "string", maxLength: 100 },
+          subject: { type: "string", nullable: true, maxLength: 80 },
+          notes: { type: "string", nullable: true, maxLength: 500 },
+          startedAt: { type: "string", format: "date-time" },
+          endedAt: { type: "string", format: "date-time" },
+          durationMinutes: { type: "integer", minimum: 1 },
+        },
+        required: ["title", "startedAt", "endedAt", "durationMinutes"],
+      },
+      StudySessionUpdateRequest: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          title: { type: "string", maxLength: 100 },
+          subject: { type: "string", nullable: true, maxLength: 80 },
+          notes: { type: "string", nullable: true, maxLength: 500 },
+          startedAt: { type: "string", format: "date-time" },
+          endedAt: { type: "string", format: "date-time", nullable: true },
+          durationMinutes: { type: "integer", minimum: 1 },
+        },
       },
       WorkloadStats: {
         type: "object",
@@ -867,6 +921,90 @@ export const openApiSpec = {
             content: json(ref("WorkloadResponse")),
           },
           401: unauthorizedResponse,
+        },
+      },
+    },
+    "/api/study-sessions": {
+      get: {
+        tags: ["Study Sessions"],
+        summary: "Get the current user's study sessions",
+        security: [{ sessionCookie: [] }],
+        responses: {
+          200: {
+            description: "Recent study sessions",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "array",
+                  items: ref("StudySessionRecord"),
+                },
+              },
+            },
+          },
+          401: unauthorizedResponse,
+        },
+      },
+      post: {
+        tags: ["Study Sessions"],
+        summary: "Create a study session",
+        security: [{ sessionCookie: [] }],
+        requestBody: {
+          required: true,
+          content: json(ref("StudySessionCreateRequest")),
+        },
+        responses: {
+          201: {
+            description: "Study session created",
+            content: json(ref("StudySessionRecord")),
+          },
+          400: badRequestResponse,
+          401: unauthorizedResponse,
+        },
+      },
+    },
+    "/api/study-sessions/{sessionId}": {
+      put: {
+        tags: ["Study Sessions"],
+        summary: "Update a study session",
+        security: [{ sessionCookie: [] }],
+        parameters: [
+          {
+            name: "sessionId",
+            in: "path",
+            required: true,
+            schema: { type: "string" },
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: json(ref("StudySessionUpdateRequest")),
+        },
+        responses: {
+          200: {
+            description: "Study session updated",
+            content: json(ref("StudySessionRecord")),
+          },
+          400: badRequestResponse,
+          401: unauthorizedResponse,
+          404: notFoundResponse,
+        },
+      },
+      delete: {
+        tags: ["Study Sessions"],
+        summary: "Delete a study session",
+        security: [{ sessionCookie: [] }],
+        parameters: [
+          {
+            name: "sessionId",
+            in: "path",
+            required: true,
+            schema: { type: "string" },
+          },
+        ],
+        responses: {
+          200: okResponse,
+          401: unauthorizedResponse,
+          404: notFoundResponse,
         },
       },
     },

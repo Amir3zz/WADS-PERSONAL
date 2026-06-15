@@ -33,12 +33,16 @@ export default function BoardCard({ board }: BoardCardProps) {
   const [color, setColor] = useState(board.color ?? "");
 
   const handleDelete = async () => {
-    const ok = window.confirm(`Delete "${board.title}"? This also removes its columns and cards.`);
+    const ok = window.confirm(
+      `Delete "${board.title}"? This also removes its columns and cards.`,
+    );
     if (!ok) return;
 
     try {
       setLoading(true);
-      const res = await fetch(`/api/boards/${board.id}`, { method: "DELETE" });
+      const res = await fetch(`/api/boards/${board.id}`, {
+        method: "DELETE",
+      });
       const data = await res.json();
 
       if (!res.ok) {
@@ -49,7 +53,9 @@ export default function BoardCard({ board }: BoardCardProps) {
       router.refresh();
     } catch (error) {
       console.error(error);
-      toast.error(error instanceof Error ? error.message : "Something went wrong");
+      toast.error(
+        error instanceof Error ? error.message : "Something went wrong",
+      );
     } finally {
       setLoading(false);
     }
@@ -91,7 +97,9 @@ export default function BoardCard({ board }: BoardCardProps) {
       router.refresh();
     } catch (error) {
       console.error(error);
-      toast.error(error instanceof Error ? error.message : "Something went wrong");
+      toast.error(
+        error instanceof Error ? error.message : "Something went wrong",
+      );
     } finally {
       setLoading(false);
     }
@@ -100,7 +108,7 @@ export default function BoardCard({ board }: BoardCardProps) {
   const barColor = board.color || "#a3a3a3";
 
   return (
-    <Card className="relative h-full overflow-hidden border-border/70 shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-md">
+    <Card className="relative h-full min-w-0 overflow-hidden border-border/70 shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-md">
       <div className="h-2 w-full" style={{ backgroundColor: barColor }} />
 
       <div className="absolute right-3 top-3 z-10 flex gap-2">
@@ -145,19 +153,23 @@ export default function BoardCard({ board }: BoardCardProps) {
         )}
       </div>
 
-      <CardContent className="flex h-full min-h-[240px] flex-col justify-between p-5">
+      <CardContent className="flex h-full min-h-[240px] min-w-0 flex-col justify-between p-5">
         {!editing ? (
           <>
-            <Link href={`/board/${board.id}`} className="block space-y-4 pr-20">
-              <div className="flex items-start justify-between gap-3">
-                <div className="space-y-1">
-                  <h3 className="text-3xl font-black uppercase tracking-tight">{board.title}</h3>
-                  <p className="text-sm text-muted-foreground">Made by: {board.ownerName}</p>
+            <Link href={`/board/${board.id}`} className="block min-w-0 space-y-4 pr-20">
+              <div className="flex min-w-0 items-start justify-between gap-3">
+                <div className="min-w-0 space-y-1">
+                  <h3 className="break-words text-2xl font-black uppercase leading-tight tracking-tight">
+                    {board.title}
+                  </h3>
+                  <p className="break-words text-sm whitespace-normal text-muted-foreground">
+                    Made by: {board.ownerName}
+                  </p>
                 </div>
 
                 {board.icon ? (
                   <div
-                    className="flex h-11 w-11 items-center justify-center rounded-full text-lg font-semibold text-white"
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-lg font-semibold text-white"
                     style={{ backgroundColor: barColor }}
                     aria-hidden
                   >
@@ -166,15 +178,17 @@ export default function BoardCard({ board }: BoardCardProps) {
                 ) : null}
               </div>
 
-              <p className="line-clamp-2 text-sm text-muted-foreground">
+              <p className="break-words text-sm whitespace-normal text-muted-foreground">
                 {board.description ||
                   `A study board with ${board.columnCount} columns and ${board.totalCards} cards.`}
               </p>
 
               <div className="space-y-3 pt-8">
-                <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center justify-between gap-3 text-sm">
                   <span className="font-medium">Progress: {board.progress}%</span>
-                  <span className="text-muted-foreground">{board.totalCards} cards</span>
+                  <span className="shrink-0 text-muted-foreground">
+                    {board.totalCards} cards
+                  </span>
                 </div>
 
                 <div className="h-3 w-full overflow-hidden rounded-full bg-muted">
@@ -193,7 +207,11 @@ export default function BoardCard({ board }: BoardCardProps) {
           <form className="space-y-3 pr-20" onSubmit={handleSave}>
             <div>
               <label className="mb-1 block text-sm font-medium">Title</label>
-              <Input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={80} />
+              <Input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                maxLength={80}
+              />
             </div>
 
             <div>

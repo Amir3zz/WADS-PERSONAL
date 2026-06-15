@@ -56,8 +56,12 @@ export default function SortableBoardGrid({ boards }: SortableBoardGridProps) {
   const handleDrop = async (targetBoardId: string) => {
     if (!draggedBoardId || draggedBoardId === targetBoardId) return;
 
-    const fromIndex = orderedBoards.findIndex((board) => board.id === draggedBoardId);
-    const toIndex = orderedBoards.findIndex((board) => board.id === targetBoardId);
+    const fromIndex = orderedBoards.findIndex(
+      (board) => board.id === draggedBoardId,
+    );
+    const toIndex = orderedBoards.findIndex(
+      (board) => board.id === targetBoardId,
+    );
 
     if (fromIndex < 0 || toIndex < 0) return;
 
@@ -71,7 +75,9 @@ export default function SortableBoardGrid({ boards }: SortableBoardGridProps) {
       router.refresh();
     } catch (error) {
       setOrderedBoards(previousBoards);
-      toast.error(error instanceof Error ? error.message : "Could not save board order");
+      toast.error(
+        error instanceof Error ? error.message : "Could not save board order",
+      );
     }
   };
 
@@ -94,9 +100,8 @@ export default function SortableBoardGrid({ boards }: SortableBoardGridProps) {
             void handleDrop(board.id);
           }}
           onDragEnd={() => setDraggedBoardId(null)}
-          className={
-            draggedBoardId === board.id ? "cursor-grabbing opacity-60" : "cursor-grab"
-          }
+          className={`min-w-0 ${draggedBoardId === board.id ? "cursor-grabbing opacity-60" : "cursor-grab"
+            }`}
         >
           <BoardCard board={board} />
         </div>
