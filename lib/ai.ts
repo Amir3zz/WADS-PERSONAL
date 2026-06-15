@@ -36,8 +36,6 @@ const CARD_PLAN_SCHEMA = {
   required: ["subtasks", "priority", "suggestion"],
 } as const;
 
-// ------------------ helpers ------------------
-
 function normalizeText(value: unknown): string {
   return String(value ?? "").trim();
 }
@@ -50,6 +48,7 @@ function clampText(value: string, max = 500): string {
 
 function clampSubtasks(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
+
   return value
     .map((item) => clampText(item, 120))
     .filter(Boolean)
@@ -58,8 +57,10 @@ function clampSubtasks(value: unknown): string[] {
 
 function formatDateForPrompt(value?: string | null): string {
   if (!value) return "(none)";
+
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
+
   return new Intl.DateTimeFormat("en-US", {
     dateStyle: "medium",
     timeStyle: "short",
@@ -68,6 +69,7 @@ function formatDateForPrompt(value?: string | null): string {
 
 function getDaysUntilDue(dueDate?: string | null): number | null {
   if (!dueDate) return null;
+
   const date = new Date(dueDate);
   if (Number.isNaN(date.getTime())) return null;
 
@@ -75,19 +77,37 @@ function getDaysUntilDue(dueDate?: string | null): number | null {
   return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 }
 
-function inferTaskType(text: string): "essay" | "project" | "exam" | "presentation" | "reading" | "general" {
-  if (/(essay|paper|report|research|thesis|write up|writing)/i.test(text)) return "essay";
-  if (/(project|group work|assignment|build|design|develop|prototype)/i.test(text)) return "project";
-  if (/(exam|test|quiz|midterm|final|assessment)/i.test(text)) return "exam";
-  if (/(presentation|slides|speech|seminar|demo|present)/i.test(text)) return "presentation";
-  if (/(reading|read|chapter|article|book|summary|notes)/i.test(text)) return "reading";
+function inferTaskType(
+  text: string,
+): "essay" | "project" | "exam" | "presentation" | "reading" | "general" {
+  if (/(essay|paper|report|research|thesis|writing)/i.test(text)) {
+    return "essay";
+  }
+
+  if (
+    /(project|group work|assignment|build|design|develop|prototype)/i.test(text)
+  ) {
+    return "project";
+  }
+
+  if (/(exam|test|quiz|midterm|final|assessment)/i.test(text)) {
+    return "exam";
+  }
+
+  if (/(presentation|slides|speech|seminar|demo|present)/i.test(text)) {
+    return "presentation";
+  }
+
+  if (/(reading|read|chapter|article|book|summary|notes)/i.test(text)) {
+    return "reading";
+  }
+
   return "general";
 }
 
-// ------------------ LOCAL AI SIMULATION ------------------
-
 function simulatedAI(input: CardAIInput): CardAIResult {
-  const combined = `${input.title} ${input.description} ${input.boardTitle} ${input.columnTitle}`.toLowerCase();
+  const combined =
+    `${input.title} ${input.description ?? ""} ${input.boardTitle ?? ""} ${input.columnTitle ?? ""}`.toLowerCase();
 
   const taskType = inferTaskType(combined);
   const daysUntilDue = getDaysUntilDue(input.dueDate);
@@ -95,43 +115,103 @@ function simulatedAI(input: CardAIInput): CardAIResult {
   let priority: CardAIResult["priority"] = "MEDIUM";
 
   if (daysUntilDue !== null) {
-    if (daysUntilDue <= 2) priority = "HIGH";
-    else if (daysUntilDue <= 5) priority = "HIGH";
-    else if (daysUntilDue <= 10) priority = "MEDIUM";
-    else priority = "LOW";
+    if (daysUntilDue <= 3) {
+      priority = "HIGH";
+    } else if (daysUntilDue <= 10) {
+      priority = "MEDIUM";
+    } else {
+      priority = "LOW";
+    }
   }
 
-  const variants = {
+  const variants: Record<
+    "essay" | "project" | "exam" | "presentation" | "reading" | "general",
+    string[][]
+  > = {
     essay: [
-      ["Understand the essay question", "Create thesis", "Outline structure", "Write draft", "Edit final"],
-      ["Analyze requirements", "Research sources", "Draft content", "Refine arguments", "Add citations"],
+      [
+        "Understand the prompt",
+        "Gather sources",
+        "Draft outline",
+        "Write first draft",
+        "Revise and polish",
+      ],
+      [
+        "Break down the question",
+        "Research key points",
+        "Write body paragraphs",
+        "Check references",
+        "Final edit",
+      ],
     ],
     project: [
-      ["Define scope", "Break into tasks", "Build core", "Test features", "Finalize"],
-      ["List deliverables", "Setup tools", "Develop main parts", "Fix issues", "Submit"],
+      [
+        "Define the scope",
+        "List deliverables",
+        "Work on the core feature",
+        "Test the result",
+        "Prepare submission",
+      ],
+      [
+        "Plan the tasks",
+        "Build the most important part first",
+        "Review the output",
+        "Fix issues",
+        "Finalize",
+      ],
     ],
     exam: [
-      ["List topics", "Review notes", "Practice questions", "Fix weak areas", "Final review"],
-      ["Summarize topics", "Memorize key ideas", "Self-test", "Review mistakes"],
+      [
+        "List topics",
+        "Review notes",
+        "Practice questions",
+        "Focus on weak areas",
+        "Do a final review",
+      ],
+      [
+        "Summarize the material",
+        "Memorize key ideas",
+        "Self-test",
+        "Review mistakes",
+      ],
     ],
     presentation: [
-      ["Define message", "Outline slides", "Design slides", "Practice"],
+      [
+        "Define the main message",
+        "Outline the slides",
+        "Create visuals",
+        "Practice speaking",
+        "Prepare answers",
+      ],
     ],
     reading: [
-      ["Read material", "Highlight points", "Summarize"],
+      [
+        "Read the material",
+        "Highlight key ideas",
+        "Summarize the chapter",
+        "Write quick notes",
+      ],
     ],
     general: [
-      ["Understand task", "Break into steps", "Start small", "Review progress"],
+      [
+        "Understand the task",
+        "Break it into smaller steps",
+        "Start with the easiest part",
+        "Review progress",
+      ],
     ],
   };
 
-  const options = variants[taskType] || variants.general;
-  const subtasks = options[Math.floor(Math.random() * options.length)];
+  const options = variants[taskType];
+  const subtasks =
+    options[Math.floor(Math.random() * options.length)] ?? variants.general[0];
 
   const suggestion =
     daysUntilDue !== null && daysUntilDue <= 3
-      ? "Deadline is very close — focus on completing the core requirements first."
-      : "Work through the subtasks step by step and adjust as needed.";
+      ? "This looks urgent, so focus on the most important part first and finish the rest after."
+      : daysUntilDue !== null && daysUntilDue <= 10
+        ? "You still have some time, but it is best to split this into small daily goals."
+        : "Work through the subtasks step by step and keep the plan simple.";
 
   return {
     subtasks,
@@ -140,40 +220,68 @@ function simulatedAI(input: CardAIInput): CardAIResult {
   };
 }
 
-// ------------------ MAIN FUNCTION ------------------
+function extractJsonText(response: OpenAI.Responses.Response): string | null {
+  const outputText = response.output
+    ?.flatMap((item: any) => item.content ?? [])
+    .find((content: any) => content?.type === "output_text")?.text;
 
-export async function generateCardAI(input: CardAIInput): Promise<CardAIResult> {
-  const useLocal =
-    process.env.USE_LOCAL_AI === "true" ||
-    process.env.NODE_ENV === "development";
+  if (typeof outputText !== "string") {
+    return null;
+  }
+
+  const trimmed = outputText.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+export async function generateCardAI(
+  input: CardAIInput,
+): Promise<CardAIResult> {
+  const useLocal = process.env.USE_LOCAL_AI === "true";
+
+  console.log("[AI] USE_LOCAL_AI =", process.env.USE_LOCAL_AI);
 
   if (useLocal) {
-    console.log("Using LOCAL AI simulation");
+    console.log("[AI] Using simulated AI (USE_LOCAL_AI=true)");
     return simulatedAI(input);
   }
 
   const apiKey = process.env.OPENAI_API_KEY;
 
+  console.log("[AI] OPENAI_API_KEY exists =", !!apiKey);
+
   if (!apiKey) {
-    console.warn("No API key, using simulated AI");
+    console.log("[AI] Using simulated AI (missing OPENAI_API_KEY)");
     return simulatedAI(input);
   }
+
+  console.log("[AI] Using OpenAI");
 
   const client = new OpenAI({ apiKey });
 
   const prompt = `
 You are a study planner assistant.
 
-Create a plan based on:
+Create a focused study plan based on this task.
 
 Title: ${normalizeText(input.title)}
 Description: ${normalizeText(input.description)}
 Board: ${normalizeText(input.boardTitle)}
 Column: ${normalizeText(input.columnTitle)}
-Due: ${formatDateForPrompt(input.dueDate)}
+Due date: ${formatDateForPrompt(input.dueDate)}
 
-Return ONLY JSON:
-{subtasks: string[], priority: "HIGH"|"MEDIUM"|"LOW", suggestion: string}
+Rules:
+- Return only JSON.
+- Keep subtasks short and practical.
+- Use 3 to 6 subtasks when possible.
+- Make the suggestion clear, helpful, and student-friendly.
+- Choose priority based on urgency and task difficulty.
+
+Return this exact JSON shape:
+{
+  "subtasks": ["string"],
+  "priority": "HIGH" | "MEDIUM" | "LOW",
+  "suggestion": "string"
+}
 `;
 
   try {
@@ -190,43 +298,51 @@ Return ONLY JSON:
       },
     });
 
-    console.log("FULL RESPONSE:", JSON.stringify(response, null, 2));
-
-    const raw =
-      response.output
-        ?.flatMap((o: any) => o.content ?? [])
-        .find((c: any) => c.type === "output_text")?.text
-        ?.trim();
-
-    console.log("RAW TEXT:", raw);
+    const raw = extractJsonText(response);
 
     if (!raw) {
-      console.warn("Empty AI response, using simulated AI");
+      console.log("[AI] OpenAI returned empty response, using fallback");
       return simulatedAI(input);
     }
 
-    let parsed: any;
+    let parsed: unknown;
+
     try {
       parsed = JSON.parse(raw);
     } catch {
-      console.error("JSON parse failed");
+      console.log("[AI] Failed to parse OpenAI JSON, using fallback");
       return simulatedAI(input);
     }
 
-    return {
-      subtasks: clampSubtasks(parsed.subtasks),
-      priority:
-        parsed.priority === "HIGH" || parsed.priority === "MEDIUM" || parsed.priority === "LOW"
-          ? parsed.priority
-          : "MEDIUM",
-      suggestion: clampText(parsed.suggestion ?? ""),
-    };
-  } catch (error: any) {
-    if (error?.code === "insufficient_quota") {
-      console.warn("Quota exceeded, using simulated AI");
-    } else {
-      console.error("OpenAI error:", error);
+    if (
+      typeof parsed !== "object" ||
+      parsed === null ||
+      !("priority" in parsed) ||
+      !("suggestion" in parsed) ||
+      !("subtasks" in parsed)
+    ) {
+      console.log("[AI] OpenAI response shape invalid, using fallback");
+      return simulatedAI(input);
     }
+
+    const result = parsed as {
+      subtasks: unknown;
+      priority: unknown;
+      suggestion: unknown;
+    };
+
+    return {
+      subtasks: clampSubtasks(result.subtasks),
+      priority:
+        result.priority === "HIGH" ||
+        result.priority === "MEDIUM" ||
+        result.priority === "LOW"
+          ? result.priority
+          : "MEDIUM",
+      suggestion: clampText(String(result.suggestion ?? "")),
+    };
+  } catch (error) {
+    console.error("[AI] OpenAI request failed:", error);
     return simulatedAI(input);
   }
 }

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Pencil, Trash2, Save, X } from "lucide-react";
+import { ChevronDown, ChevronUp, Pencil, Save, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -75,7 +75,10 @@ function parseSubtasks(value: string | null): string[] {
   }
 }
 
-const priorityStyles: Record<NonNullable<KanbanCardProps["card"]["priority"]>, string> = {
+const priorityStyles: Record<
+  NonNullable<KanbanCardProps["card"]["priority"]>,
+  string
+> = {
   HIGH: "bg-red-500/10 text-red-700",
   MEDIUM: "bg-amber-500/10 text-amber-700",
   LOW: "bg-emerald-500/10 text-emerald-700",
@@ -93,6 +96,7 @@ export default function KanbanCard({
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showAiDetails, setShowAiDetails] = useState(false);
   const [title, setTitle] = useState(card.title);
   const [description, setDescription] = useState(card.description ?? "");
   const [dueDate, setDueDate] = useState(toDateTimeLocalValue(card.dueDate));
@@ -175,9 +179,8 @@ export default function KanbanCard({
       onDragOver={onDragOver}
       onDrop={onDrop}
       onDragEnd={onDragEnd}
-      className={`rounded-2xl border bg-background p-3 shadow-sm transition hover:shadow-md ${
-        dragging ? "cursor-grabbing opacity-60" : "cursor-grab"
-      }`}
+      className={`rounded-2xl border bg-background p-3 shadow-sm transition hover:shadow-md ${dragging ? "cursor-grabbing opacity-60" : "cursor-grab"
+        }`}
     >
       {!editing ? (
         <>
@@ -188,9 +191,8 @@ export default function KanbanCard({
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 {card.priority ? (
                   <span
-                    className={`rounded-full px-2 py-1 text-xs font-medium ${
-                      priorityStyles[card.priority]
-                    }`}
+                    className={`rounded-full px-2 py-1 text-xs font-medium ${priorityStyles[card.priority]
+                      }`}
                   >
                     {card.priority} priority
                   </span>
@@ -221,26 +223,60 @@ export default function KanbanCard({
             </div>
           </div>
 
-          {aiSubtasks.length > 0 ? (
-            <div className="mt-3 rounded-xl bg-muted/40 p-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                AI subtasks
-              </p>
-              <ul className="mt-2 space-y-1 text-sm">
-                {aiSubtasks.map((task, index) => (
-                  <li key={`${task}-${index}`} className="flex gap-2">
-                    <span>•</span>
-                    <span>{task}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
+          {(aiSubtasks.length > 0 || card.aiSuggestion) ? (
+            <div className="mt-3 rounded-xl border bg-muted/20 p-3">
+              <button
+                type="button"
+                onClick={() => setShowAiDetails((value) => !value)}
+                className="flex w-full items-center justify-between gap-3 text-left"
+              >
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    AI study plan
+                  </p>
+                  <p className="text-sm font-medium">
+                    {showAiDetails ? "Hide details" : "Show details"}
+                  </p>
+                </div>
 
-          {card.aiSuggestion ? (
-            <p className="mt-3 rounded-xl border bg-muted/20 p-3 text-sm text-muted-foreground">
-              {card.aiSuggestion}
-            </p>
+                {showAiDetails ? (
+                  <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                )}
+              </button>
+
+              {showAiDetails ? (
+                <div className="mt-3 space-y-3">
+                  {aiSubtasks.length > 0 ? (
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        Suggested subtasks
+                      </p>
+                      <ul className="mt-2 space-y-1 text-sm">
+                        {aiSubtasks.map((task, index) => (
+                          <li key={`${task}-${index}`} className="flex gap-2">
+                            <span>•</span>
+                            <span>{task}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
+
+                  {card.aiSuggestion ? (
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        Suggestion
+                      </p>
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        {card.aiSuggestion}
+                      </p>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
           ) : null}
 
           <p className="mt-3 text-xs text-muted-foreground">
