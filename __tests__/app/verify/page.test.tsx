@@ -9,17 +9,34 @@ import VerifyPage from "@/app/verify/page";
 jest.mock("next/navigation", () => ({
   useRouter: () => ({
     push: jest.fn(),
-  }),
-  useSearchParams: () => ({
-    get: jest.fn().mockReturnValue("mock-oob-code"),
+    refresh: jest.fn(),
   }),
 }));
 
+jest.mock("@/lib/firebase", () => ({
+  auth: {
+    currentUser: null,
+  },
+}));
+
+jest.mock("firebase/auth", () => ({
+  getIdToken: jest.fn(),
+  reload: jest.fn(),
+  sendEmailVerification: jest.fn(),
+}));
+
 describe("VerifyPage", () => {
-  it("renders verification message", () => {
+  it("renders the verification screen", () => {
     render(<VerifyPage />);
 
-    const text = screen.getByText(/verify/i);
-    expect(text).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /verify your email/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /i have verified my email/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /resend verification email/i }),
+    ).toBeInTheDocument();
   });
 });
