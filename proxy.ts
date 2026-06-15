@@ -4,13 +4,12 @@ const protectedApiRoutes = [
   "/api/boards",
   "/api/cards",
   "/api/columns",
-  "/api/user",
 ];
 
 const protectedPageRoutes = [
   "/dashboard",
   "/board",
-  "/account",
+  "/profile",
 ];
 
 export function proxy(req: NextRequest) {
@@ -30,15 +29,12 @@ export function proxy(req: NextRequest) {
 
   const sessionCookie = req.cookies.get("session")?.value;
 
-  // Allow requests only if a session cookie exists.
-  // API routes still do the real auth check with getSession().
   if (!sessionCookie) {
     if (isProtectedApi) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const loginUrl = new URL("/login", req.url);
-    return NextResponse.redirect(loginUrl);
+    return NextResponse.redirect(new URL("/login", req.url));
   }
 
   return NextResponse.next();
@@ -49,6 +45,6 @@ export const config = {
     "/api/:path*",
     "/dashboard/:path*",
     "/board/:path*",
-    "/account/:path*",
+    "/profile/:path*",
   ],
 };
