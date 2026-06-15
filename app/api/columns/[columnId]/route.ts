@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getSession } from "@/lib/auth";
+import { withAuth } from "@/lib/auth-server";
 import { prisma } from "@/lib/prisma";
 import { getColumnOwnership, getColumnTree } from "@/lib/dashboard-queries";
 import {
@@ -17,92 +17,86 @@ type RouteContext = {
 
 const MAX_TITLE_LENGTH = 60;
 
-export async function GET(_req: Request, context: RouteContext) {
-  const { columnId } = await context.params;
-  const session = await getSession();
+export const GET = withAuth(
+  async (session, _req: Request, context: RouteContext) => {
+    const { columnId } = await context.params;
 
-  if (!session) {
-    return jsonError("Unauthorized", 401);
-  }
+    const column = await getColumnTree(columnId, session.id);
 
-  const column = await getColumnTree(columnId, session.id);
-
-  if (!column) {
-    return jsonError("Column not found", 404);
-  }
-
-  return NextResponse.json(column);
-}
-
-export async function PATCH(req: Request, context: RouteContext) {
-  const { columnId } = await context.params;
-  const session = await getSession();
-
-  if (!session) {
-    return jsonError("Unauthorized", 401);
-  }
-
-  const column = await getColumnOwnership(columnId, session.id);
-
-  if (!column) {
-    return jsonError("Column not found", 404);
-  }
-
-  const body = await readJsonBody(req);
-
-  const data: {
-    title?: string;
-    position?: number;
-  } = {};
-
-  if (body?.title !== undefined) {
-    const title = text(body.title);
-    if (!title) {
-      return jsonError("Title is required", 400);
+    if (!column) {
+      return jsonError("Column not found", 404);
     }
-    if (title.length > MAX_TITLE_LENGTH) {
-      return jsonError(`Title must be ${MAX_TITLE_LENGTH} characters or less`, 400);
+
+    return NextResponse.json(column);
+  },
+);
+
+export const PATCH = withAuth(
+  async (session, req: Request, context: RouteContext) => {
+    const { columnId } = await context.params;
+
+    const column = await getColumnOwnership(columnId, session.id);
+
+    if (!column) {
+      return jsonError("Column not found", 404);
     }
-    data.title = title;
-  }
 
-  if (body?.position !== undefined) {
-    const position = nonNegativeInteger(body.position);
-    if (position === null) {
-      return jsonError("Position must be a non-negative integer", 400);
+    const body = await readJsonBody(req);
+
+    const data: {
+      title?: string;
+      position?: number;
+    } = {};
+
+    if (body?.title !== undefined) {
+      const title = text(body.title);
+      if (!title) {
+        return jsonError("Title is required", 400);
+      }
+      if (title.length > MAX_TITLE_LENGTH) {
+        return jsonError(
+          `Title must be ${MAX_TITLE_LENGTH} characters or less`,
+          400,
+        );
+      }
+      data.title = title;
     }
-    data.position = position;
-  }
 
-  if (Object.keys(data).length === 0) {
-    return jsonError("No changes provided", 400);
-  }
+    if (body?.position !== undefined) {
+      const position = nonNegativeInteger(body.position);
+      if (position === null) {
+        return jsonError("Position must be a non-negative integer", 400);
+      }
+      data.position = position;
+    }
 
-  const updated = await prisma.column.update({
-    where: { id: columnId },
-    data,
-  });
+    if (Object.keys(data).length === 0) {
+      return jsonError("No changes provided", 400);
+    }
 
-  return NextResponse.json(updated);
-}
+    const updated = await prisma.column.update({
+      where: { id: columnId },
+      data,
+    });
 
-export async function DELETE(_req: Request, context: RouteContext) {
-  const { columnId } = await context.params;
-  const session = await getSession();
+    return NextResponse.json(updated);
+  },
+);
 
-  if (!session) {
-    return jsonError("Unauthorized", 401);
-  }
+export const DELETE = withAuth(
+  async (session, _req: Request, context: RouteContext) => {
+    const { columnId } = await context.params;
 
-  const column = await getColumnOwnership(columnId, session.id);
+    const column = await getColumnOwnership(columnId, session.id);
 
-  if (!column) {
-    return jsonError("Column not found", 404);
-  }
+    if (!column) {
+      return jsonError("Column not found", 404);
+    }
 
-  await prisma.column.delete({
-    where: { id: columnId },
-  });
+    await prisma.column.delete({
+      where: { id: columnId },
+    });
 
-  return NextResponse.json({ ok: true });
-}
+    return NextResponse.json({ ok: true });
+  },
+);

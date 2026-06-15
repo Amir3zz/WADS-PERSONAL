@@ -6,6 +6,25 @@ import { getBoardTree } from "@/lib/dashboard-queries";
 import { Button } from "@/components/ui/button";
 import KanbanBoard from "@/components/dashboard/kanban-board";
 
+type BoardColumn = {
+  id: string;
+  title: string;
+  position: number;
+  cards: Array<{
+    id: string;
+    title: string;
+    description: string | null;
+    completed: boolean;
+    position: number;
+    dueDate: Date | null;
+    priority: string | null;
+    aiSubtasks: string | null;
+    aiSuggestion: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+  }>;
+};
+
 type BoardPageProps = {
   params: Promise<{
     boardId: string;
@@ -31,7 +50,7 @@ export default async function BoardPage({ params }: BoardPageProps) {
     id: board.id,
     title: board.title,
     description: board.description,
-    columns: board.columns.map((column) => ({
+    columns: (board.columns as BoardColumn[]).map((column) => ({
       id: column.id,
       title: column.title,
       position: column.position,

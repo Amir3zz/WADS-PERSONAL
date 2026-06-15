@@ -1,15 +1,9 @@
 import { NextResponse } from "next/server";
-import { getSession } from "@/lib/auth";
+import { withAuth, clearSessionCookie } from "@/lib/auth-server";
 import { adminAuth } from "@/lib/firebase-admin";
 import { prisma } from "@/lib/prisma";
 
-export async function DELETE() {
-  const session = await getSession();
-
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+export const DELETE = withAuth(async (session) => {
   try {
     const firebaseUser = await adminAuth().getUser(session.firebaseUid);
 
@@ -30,13 +24,7 @@ export async function DELETE() {
 
     const response = NextResponse.json({ success: true });
 
-    response.cookies.set("session", "", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      expires: new Date(0),
-      path: "/",
-    });
+    clearSessionCookie(response);
 
     return response;
   } catch (error) {
@@ -46,4 +34,4 @@ export async function DELETE() {
       { status: 500 },
     );
   }
-}
+});

@@ -29,9 +29,31 @@ type KanbanColumnProps = {
       aiSuggestion: string | null;
     }>;
   };
+  dragging?: boolean;
+  draggedCardId?: string | null;
+  onColumnDragStart?: () => void;
+  onColumnDragOver?: (event: React.DragEvent<HTMLDivElement>) => void;
+  onColumnDrop?: (event: React.DragEvent<HTMLDivElement>) => void;
+  onDragEnd?: () => void;
+  onCardDragStart?: (cardId: string) => void;
+  onCardDragOver?: (event: React.DragEvent<HTMLDivElement>) => void;
+  onCardDrop?: (event: React.DragEvent<HTMLDivElement>, cardId: string) => void;
+  onColumnCardDrop?: (event: React.DragEvent<HTMLDivElement>) => void;
 };
 
-export default function KanbanColumn({ column }: KanbanColumnProps) {
+export default function KanbanColumn({
+  column,
+  dragging,
+  draggedCardId,
+  onColumnDragStart,
+  onColumnDragOver,
+  onColumnDrop,
+  onDragEnd,
+  onCardDragStart,
+  onCardDragOver,
+  onCardDrop,
+  onColumnCardDrop,
+}: KanbanColumnProps) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -98,7 +120,17 @@ export default function KanbanColumn({ column }: KanbanColumnProps) {
   };
 
   return (
-    <div className="w-[320px] shrink-0">
+    <div
+      draggable={!editing}
+      onDragStart={(event) => {
+        event.dataTransfer.effectAllowed = "move";
+        onColumnDragStart?.();
+      }}
+      onDragOver={onColumnDragOver}
+      onDrop={onColumnDrop}
+      onDragEnd={onDragEnd}
+      className={`w-[320px] shrink-0 ${dragging ? "cursor-grabbing opacity-60" : "cursor-grab"}`}
+    >
       <Card className="h-full border-border/70 shadow-sm">
         <CardContent className="space-y-4 p-4">
           {!editing ? (
@@ -136,9 +168,28 @@ export default function KanbanColumn({ column }: KanbanColumnProps) {
                 </div>
               </div>
 
-              <div className="space-y-3">
+              <div
+                className="min-h-12 space-y-3"
+                onDragOver={(event) => {
+                  event.preventDefault();
+                  event.dataTransfer.dropEffect = "move";
+                }}
+                onDrop={onColumnCardDrop}
+              >
                 {column.cards.map((card) => (
-                  <KanbanCard key={card.id} card={card} />
+                  <KanbanCard
+                    key={card.id}
+                    card={card}
+                    draggable
+                    dragging={draggedCardId === card.id}
+                    onDragStart={(event) => {
+                      event.stopPropagation();
+                      onCardDragStart?.(card.id);
+                    }}
+                    onDragOver={onCardDragOver}
+                    onDrop={(event) => onCardDrop?.(event, card.id)}
+                    onDragEnd={onDragEnd}
+                  />
                 ))}
               </div>
 

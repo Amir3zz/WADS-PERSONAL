@@ -54,7 +54,7 @@ const cardContextInclude = {
 export function getDashboardBoards(userId: string) {
   return prisma.board.findMany({
     where: { userId },
-    orderBy: { updatedAt: "desc" },
+    orderBy: [{ position: "asc" }, { updatedAt: "desc" }],
     include: dashboardBoardInclude,
   });
 }
@@ -73,6 +73,16 @@ export function getBoardOwnership(boardId: string, userId: string) {
   return prisma.board.findFirst({
     where: {
       id: boardId,
+      userId,
+    },
+    select: { id: true },
+  });
+}
+
+export function getBoardsOwnership(boardIds: string[], userId: string) {
+  return prisma.board.findMany({
+    where: {
+      id: { in: boardIds },
       userId,
     },
     select: { id: true },

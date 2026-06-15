@@ -21,6 +21,12 @@ type KanbanCardProps = {
     aiSubtasks: string | null;
     aiSuggestion: string | null;
   };
+  dragging?: boolean;
+  draggable?: boolean;
+  onDragStart?: (event: React.DragEvent<HTMLDivElement>) => void;
+  onDragOver?: (event: React.DragEvent<HTMLDivElement>) => void;
+  onDrop?: (event: React.DragEvent<HTMLDivElement>) => void;
+  onDragEnd?: () => void;
 };
 
 function toDateTimeLocalValue(value: string | null) {
@@ -75,7 +81,15 @@ const priorityStyles: Record<NonNullable<KanbanCardProps["card"]["priority"]>, s
   LOW: "bg-emerald-500/10 text-emerald-700",
 };
 
-export default function KanbanCard({ card }: KanbanCardProps) {
+export default function KanbanCard({
+  card,
+  dragging,
+  draggable,
+  onDragStart,
+  onDragOver,
+  onDrop,
+  onDragEnd,
+}: KanbanCardProps) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -152,7 +166,19 @@ export default function KanbanCard({ card }: KanbanCardProps) {
   };
 
   return (
-    <div className="rounded-2xl border bg-background p-3 shadow-sm transition hover:shadow-md">
+    <div
+      draggable={draggable && !editing}
+      onDragStart={(event) => {
+        event.dataTransfer.effectAllowed = "move";
+        onDragStart?.(event);
+      }}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+      onDragEnd={onDragEnd}
+      className={`rounded-2xl border bg-background p-3 shadow-sm transition hover:shadow-md ${
+        dragging ? "cursor-grabbing opacity-60" : "cursor-grab"
+      }`}
+    >
       {!editing ? (
         <>
           <div className="mb-2 flex items-start justify-between gap-3">

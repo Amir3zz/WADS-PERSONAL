@@ -1075,6 +1075,7 @@ export const BoardScalarFieldEnum = {
   description: 'description',
   icon: 'icon',
   color: 'color',
+  position: 'position',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   userId: 'userId'

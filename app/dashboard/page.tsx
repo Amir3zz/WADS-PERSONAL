@@ -4,7 +4,21 @@ import { getSession } from "@/lib/auth";
 import { getDashboardBoards } from "@/lib/dashboard-queries";
 import LogoutButton from "@/components/logout-button";
 import CreateBoardForm from "@/components/dashboard/create-board-form";
-import BoardCard from "@/components/dashboard/board-card";
+import SortableBoardGrid from "@/components/dashboard/sortable-board-grid";
+
+type DashboardBoard = {
+  id: string;
+  title: string;
+  description: string | null;
+  icon: string | null;
+  color: string | null;
+  updatedAt: Date;
+  columns: Array<{
+    cards: Array<{
+      completed: boolean;
+    }>;
+  }>;
+};
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -18,11 +32,14 @@ export default async function DashboardPage() {
   const displayName = session.name?.trim() || session.email;
   const initial = (session.name?.trim()?.[0] ?? session.email?.[0] ?? "?").toUpperCase();
 
-  const boardSummaries = boards.map((board) => {
-    const totalCards = board.columns.reduce((sum, column) => sum + column.cards.length, 0);
+  const boardSummaries = (boards as DashboardBoard[]).map((board) => {
+    const totalCards = board.columns.reduce(
+      (sum: number, column) => sum + column.cards.length,
+      0,
+    );
     const completedCards = board.columns.reduce(
-      (sum, column) => sum + column.cards.filter((card) => card.completed).length,
-      0
+      (sum: number, column) => sum + column.cards.filter((card) => card.completed).length,
+      0,
     );
 
     const progress = totalCards === 0 ? 0 : Math.round((completedCards / totalCards) * 100);
@@ -89,11 +106,7 @@ export default async function DashboardPage() {
             </div>
           </div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {boardSummaries.map((board) => (
-              <BoardCard key={board.id} board={board} />
-            ))}
-          </div>
+          <SortableBoardGrid boards={boardSummaries} />
         )}
       </main>
     </div>

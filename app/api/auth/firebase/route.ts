@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminAuth } from "@/lib/firebase-admin";
 import { prisma } from "@/lib/prisma";
+import { setSessionCookie } from "@/lib/auth-server";
 
 export async function POST(req: NextRequest) {
   const authorization = req.headers.get("Authorization");
@@ -60,12 +61,7 @@ export async function POST(req: NextRequest) {
       userId: user.id,
     });
 
-    response.cookies.set("session", idToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-    });
+    setSessionCookie(response, idToken);
 
     return response;
   } catch (error) {

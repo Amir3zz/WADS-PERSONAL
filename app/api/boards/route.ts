@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getSession } from "@/lib/auth";
+import { withAuth } from "@/lib/auth-server";
 import { prisma } from "@/lib/prisma";
 import { getDashboardBoards } from "@/lib/dashboard-queries";
 import { jsonError, optionalText, readJsonBody, text } from "@/lib/api-utils";
@@ -9,24 +9,12 @@ const MAX_DESCRIPTION_LENGTH = 300;
 const MAX_ICON_LENGTH = 40;
 const MAX_COLOR_LENGTH = 40;
 
-export async function GET() {
-  const session = await getSession();
-
-  if (!session) {
-    return jsonError("Unauthorized", 401);
-  }
-
+export const GET = withAuth(async (session) => {
   const boards = await getDashboardBoards(session.id);
   return NextResponse.json(boards);
-}
+});
 
-export async function POST(req: Request) {
-  const session = await getSession();
-
-  if (!session) {
-    return jsonError("Unauthorized", 401);
-  }
-
+export const POST = withAuth(async (session, req: Request) => {
   const body = await readJsonBody(req);
 
   const title = text(body?.title);
@@ -63,25 +51,21 @@ export async function POST(req: Request) {
     );
   }
 
+  const position = await prisma.board.count({
+    where: { userId: session.id },
+  });
+
+  // Create an empty board with NO default columns.
   const board = await prisma.board.create({
     data: {
       title,
       description,
       icon,
       color,
+      position,
       userId: session.id,
-      columns: {
-        create: [
-          { title: "To Do", position: 0 },
-          { title: "In Progress", position: 1 },
-          { title: "Done", position: 2 },
-        ],
-      },
-    },
-    include: {
-      columns: true,
     },
   });
 
   return NextResponse.json(board, { status: 201 });
-}
+});
