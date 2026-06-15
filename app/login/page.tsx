@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Script from "next/script";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -27,7 +27,27 @@ import { toast } from "sonner";
 
 declare global {
   interface Window {
-    google?: any;
+    google?: {
+      accounts?: {
+        id?: {
+          initialize: (config: {
+            client_id: string;
+            callback: (response: { credential?: string }) => void;
+          }) => void;
+          renderButton: (
+            parent: HTMLElement,
+            options?: {
+              theme?: "outline" | "filled_blue" | "filled_black";
+              size?: "large" | "medium" | "small";
+              text?: "signin_with" | "signup_with" | "continue_with" | "signin";
+              shape?: "rectangular" | "pill" | "circle" | "square";
+              width?: string | number;
+              logo_alignment?: "left" | "center";
+            },
+          ) => void;
+        };
+      };
+    };
   }
 }
 
@@ -47,6 +67,9 @@ async function createFirebaseSession(idToken: string) {
 
 export default function LoginPage() {
   const router = useRouter();
+  const googleButtonRef = useRef<HTMLDivElement>(null);
+  const googleInitializedRef = useRef(false);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -54,31 +77,37 @@ export default function LoginPage() {
 
   const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
-  const initializeGoogleSignIn = () => {
-    if (!googleClientId || !window.google?.accounts?.id) {
-      return;
-    }
+  const handleGoogleCredential = async (credential: string) => {
+    const firebaseCredential = GoogleAuthProvider.credential(credential);
+    const result = await signInWithCredential(auth, firebaseCredential);
+    const idToken = await result.user.getIdToken(true);
+
+    await createFirebaseSession(idToken);
+
+    toast.success("Login successful");
+    router.push("/dashboard");
+    router.refresh();
+  };
+
+  const initializeGoogleButton = () => {
+    if (googleInitializedRef.current) return;
+    if (!googleClientId) return;
+    if (!window.google?.accounts?.id) return;
+    if (!googleButtonRef.current) return;
+
+    googleInitializedRef.current = true;
 
     window.google.accounts.id.initialize({
       client_id: googleClientId,
       callback: async (response: { credential?: string }) => {
         try {
+          setLoading(true);
+
           if (!response.credential) {
             throw new Error("Google sign-in did not return a credential.");
           }
 
-          const firebaseCredential = GoogleAuthProvider.credential(
-            response.credential,
-          );
-
-          const result = await signInWithCredential(auth, firebaseCredential);
-          const idToken = await result.user.getIdToken(true);
-
-          await createFirebaseSession(idToken);
-
-          toast.success("Login successful");
-          router.push("/dashboard");
-          router.refresh();
+          await handleGoogleCredential(response.credential);
         } catch (err: unknown) {
           console.error(err);
           const message =
@@ -90,47 +119,23 @@ export default function LoginPage() {
       },
     });
 
+    googleButtonRef.current.innerHTML = "";
+    window.google.accounts.id.renderButton(googleButtonRef.current, {
+      theme: "outline",
+      size: "large",
+      text: "continue_with",
+      shape: "rectangular",
+      logo_alignment: "left",
+      width: 320,
+    });
+
     setGoogleReady(true);
   };
 
   useEffect(() => {
-    if (window.google?.accounts?.id) {
-      initializeGoogleSignIn();
-    }
+    initializeGoogleButton();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [googleClientId]);
-
-  const handleGoogleLogin = async () => {
-    try {
-      if (!googleClientId) {
-        toast.error("Missing Google client ID.");
-        return;
-      }
-
-      if (!window.google?.accounts?.id) {
-        toast.error("Google sign-in is still loading. Please try again.");
-        return;
-      }
-
-      setLoading(true);
-
-      window.google.accounts.id.prompt((notification: any) => {
-        if (
-          notification?.isNotDisplayed?.() ||
-          notification?.isSkippedMoment?.()
-        ) {
-          setLoading(false);
-          toast.error("Google sign-in could not start. Please try again.");
-        }
-      });
-    } catch (err: unknown) {
-      console.error(err);
-      const message =
-        err instanceof Error ? err.message : "Google sign-in failed.";
-      toast.error(message);
-      setLoading(false);
-    }
-  };
 
   const validateEmailPassword = (): string | null => {
     const trimmedEmail = email.trim();
@@ -192,7 +197,7 @@ export default function LoginPage() {
       <Script
         src="https://accounts.google.com/gsi/client"
         strategy="afterInteractive"
-        onLoad={initializeGoogleSignIn}
+        onLoad={initializeGoogleButton}
       />
 
       <Card className="w-full max-w-md border-0 shadow-xl shadow-primary/5 sm:border">
@@ -206,15 +211,17 @@ export default function LoginPage() {
         </CardHeader>
 
         <CardContent className="space-y-4">
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            onClick={handleGoogleLogin}
-            disabled={loading || !googleReady}
-          >
-            {loading ? "Processing…" : "Continue with Google"}
-          </Button>
+          <div className="space-y-2">
+            <div className="flex justify-center">
+              <div ref={googleButtonRef} />
+            </div>
+
+            {!googleReady ? (
+              <p className="text-center text-xs text-muted-foreground">
+                Loading Google sign-in…
+              </p>
+            ) : null}
+          </div>
 
           <div className="flex items-center gap-2">
             <Separator className="flex-1" />
