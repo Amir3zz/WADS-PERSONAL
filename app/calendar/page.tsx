@@ -3,6 +3,7 @@ import DashboardHeader from "@/components/dashboard/dashboard-header";
 import MonthCalendar from "@/components/calendar/month-calendar";
 import { getSession } from "@/lib/auth";
 import { getCalendarCards, mapCalendarCards } from "@/lib/calendar-queries";
+import { getReminderCount } from "@/lib/reminder-queries";
 
 type CalendarPageProps = {
     searchParams?: Promise<{
@@ -53,7 +54,9 @@ export default async function CalendarPage({
     const resolvedSearchParams = await Promise.resolve(searchParams);
     const { year, month } = parseMonthParam(resolvedSearchParams?.month);
     const { start, end } = monthBounds(year, month);
+
     const cards = mapCalendarCards(await getCalendarCards(session.id, start, end));
+    const reminderCount = await getReminderCount(session.id);
 
     const displayName = session.name?.trim() || session.email;
     const initial = (
@@ -64,7 +67,11 @@ export default async function CalendarPage({
 
     return (
         <div className="min-h-screen bg-muted/30">
-            <DashboardHeader initial={initial} displayName={displayName} />
+            <DashboardHeader
+                initial={initial}
+                displayName={displayName}
+                reminderCount={reminderCount}
+            />
 
             <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 <div className="mb-6">
@@ -75,8 +82,8 @@ export default async function CalendarPage({
                         Task deadline calendar
                     </h1>
                     <p className="mt-2 max-w-2xl text-muted-foreground">
-                        Tasks with due dates appear on the day they are scheduled so you
-                        can plan the month at a glance.
+                        Tasks with due dates appear on the day they are scheduled so you can
+                        plan the month at a glance.
                     </p>
                 </div>
 

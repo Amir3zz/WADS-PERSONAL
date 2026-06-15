@@ -3,6 +3,7 @@ import DashboardHeader from "@/components/dashboard/dashboard-header";
 import StudyTimerClient from "@/components/study-timer/study-timer-client";
 import { getSession } from "@/lib/auth";
 import { getStudySessions, mapStudySessions } from "@/lib/study-session-queries";
+import { getReminderCount } from "@/lib/reminder-queries";
 
 export default async function StudyTimerPage() {
     const session = await getSession();
@@ -19,10 +20,15 @@ export default async function StudyTimerPage() {
     ).toUpperCase();
 
     const initialSessions = mapStudySessions(await getStudySessions(session.id));
+    const reminderCount = await getReminderCount(session.id);
 
     return (
         <div className="min-h-screen bg-muted/30">
-            <DashboardHeader initial={initial} displayName={displayName} />
+            <DashboardHeader
+                initial={initial}
+                displayName={displayName}
+                reminderCount={reminderCount}
+            />
 
             <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 <div className="mb-6">
@@ -33,8 +39,8 @@ export default async function StudyTimerPage() {
                         Track focused study sessions
                     </h1>
                     <p className="mt-2 max-w-2xl text-muted-foreground">
-                        Use the timer to record focused work blocks, then save them into
-                        your study history for progress analytics.
+                        Use the timer to record focused work blocks, then save them into your
+                        study history for progress analytics.
                     </p>
                 </div>
 

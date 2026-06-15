@@ -1,10 +1,17 @@
 import Link from "next/link";
-import { CalendarDays, LayoutDashboard, TimerReset, UserRound } from "lucide-react";
+import {
+    Bell,
+    CalendarDays,
+    LayoutDashboard,
+    TimerReset,
+    UserRound,
+} from "lucide-react";
 import LogoutButton from "@/components/logout-button";
 
 type DashboardHeaderProps = {
     initial: string;
     displayName: string;
+    reminderCount?: number;
 };
 
 const navLinkClass =
@@ -13,6 +20,7 @@ const navLinkClass =
 export default function DashboardHeader({
     initial,
     displayName,
+    reminderCount = 0,
 }: DashboardHeaderProps) {
     return (
         <header className="border-b bg-background/80 backdrop-blur">
@@ -49,6 +57,15 @@ export default function DashboardHeader({
                     <Link href="/study-timer" className={navLinkClass}>
                         <TimerReset className="h-4 w-4" />
                         Study timer
+                    </Link>
+                    <Link href="/notifications" className={navLinkClass}>
+                        <Bell className="h-4 w-4" />
+                        Notifications
+                        {reminderCount > 0 ? (
+                            <span className="ml-1 inline-flex min-w-5 items-center justify-center rounded-full bg-primary px-1.5 py-0.5 text-[11px] font-semibold text-primary-foreground">
+                                {reminderCount}
+                            </span>
+                        ) : null}
                     </Link>
                     <Link href="/profile" className={navLinkClass}>
                         <UserRound className="h-4 w-4" />
