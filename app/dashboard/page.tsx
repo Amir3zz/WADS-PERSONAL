@@ -1,24 +1,9 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { getDashboardBoards } from "@/lib/dashboard-queries";
-import LogoutButton from "@/components/logout-button";
-import CreateBoardForm from "@/components/dashboard/create-board-form";
+import DashboardHeader from "@/components/dashboard/dashboard-header";
+import DashboardEmptyState from "@/components/dashboard/dashboard-empty-state";
 import SortableBoardGrid from "@/components/dashboard/sortable-board-grid";
-
-type DashboardBoard = {
-  id: string;
-  title: string;
-  description: string | null;
-  icon: string | null;
-  color: string | null;
-  updatedAt: Date;
-  columns: Array<{
-    cards: Array<{
-      completed: boolean;
-    }>;
-  }>;
-};
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -32,14 +17,11 @@ export default async function DashboardPage() {
   const displayName = session.name?.trim() || session.email;
   const initial = (session.name?.trim()?.[0] ?? session.email?.[0] ?? "?").toUpperCase();
 
-  const boardSummaries = (boards as DashboardBoard[]).map((board) => {
-    const totalCards = board.columns.reduce(
-      (sum: number, column) => sum + column.cards.length,
-      0,
-    );
+  const boardSummaries = boards.map((board) => {
+    const totalCards = board.columns.reduce((sum, column) => sum + column.cards.length, 0);
     const completedCards = board.columns.reduce(
-      (sum: number, column) => sum + column.cards.filter((card) => card.completed).length,
-      0,
+      (sum, column) => sum + column.cards.filter((card) => card.completed).length,
+      0
     );
 
     const progress = totalCards === 0 ? 0 : Math.round((completedCards / totalCards) * 100);
@@ -60,26 +42,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <header className="border-b bg-background/80 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-          <Link
-            href="/profile"
-            aria-label="Open profile"
-            title="Open profile"
-            className="flex items-center gap-3 rounded-2xl border border-transparent px-2 py-1 transition hover:border-border hover:bg-muted/70"
-          >
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-sm font-semibold shadow-sm">
-              {initial}
-            </div>
-            <div className="hidden sm:block">
-              <p className="text-sm font-medium leading-none">Profile</p>
-              <p className="mt-1 text-xs text-muted-foreground">View account</p>
-            </div>
-          </Link>
-
-          <LogoutButton />
-        </div>
-      </header>
+      <DashboardHeader initial={initial} displayName={displayName} />
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
@@ -90,21 +53,10 @@ export default async function DashboardPage() {
               Continue where you left off or start a new study board.
             </p>
           </div>
-
-          <CreateBoardForm />
         </div>
 
         {boardSummaries.length === 0 ? (
-          <div className="rounded-3xl border border-dashed bg-background p-10 text-center shadow-sm">
-            <h3 className="text-2xl font-semibold">No boards yet</h3>
-            <p className="mx-auto mt-2 max-w-md text-muted-foreground">
-              Create your first study board for Math, Biology, Literature, or anything else you
-              are organizing.
-            </p>
-            <div className="mt-6 flex justify-center">
-              <CreateBoardForm />
-            </div>
-          </div>
+          <DashboardEmptyState />
         ) : (
           <SortableBoardGrid boards={boardSummaries} />
         )}

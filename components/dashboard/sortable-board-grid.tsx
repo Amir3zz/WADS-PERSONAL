@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import BoardCard from "@/components/dashboard/board-card";
 
-type BoardSummary = {
+export type BoardSummary = {
   id: string;
   title: string;
   description: string | null;
@@ -15,6 +15,7 @@ type BoardSummary = {
   progress: number;
   totalCards: number;
   columnCount: number;
+  updatedAt: string | Date;
 };
 
 type SortableBoardGridProps = {
@@ -41,7 +42,9 @@ export default function SortableBoardGrid({ boards }: SortableBoardGridProps) {
     const res = await fetch("/api/boards/reorder", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ boardIds: nextBoards.map((board) => board.id) }),
+      body: JSON.stringify({
+        boardIds: nextBoards.map((board) => board.id),
+      }),
     });
 
     if (!res.ok) {
@@ -92,9 +95,7 @@ export default function SortableBoardGrid({ boards }: SortableBoardGridProps) {
           }}
           onDragEnd={() => setDraggedBoardId(null)}
           className={
-            draggedBoardId === board.id
-              ? "cursor-grabbing opacity-60"
-              : "cursor-grab"
+            draggedBoardId === board.id ? "cursor-grabbing opacity-60" : "cursor-grab"
           }
         >
           <BoardCard board={board} />
