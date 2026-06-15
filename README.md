@@ -493,7 +493,7 @@ Important environment variables used by the project include:
 
 ### 11.3 Live Application URL
 
-**Pending deployment**
+https://boardside-sigma.vercel.app
 
 ### 11.4 Local Setup
 
