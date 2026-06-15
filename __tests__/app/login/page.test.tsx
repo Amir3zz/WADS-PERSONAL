@@ -8,9 +8,10 @@ import userEvent from "@testing-library/user-event";
 import LoginPage from "@/app/login/page";
 import { toast } from "sonner";
 import {
+    getRedirectResult,
     reload,
     signInWithEmailAndPassword,
-    signInWithPopup,
+    signInWithRedirect,
 } from "firebase/auth";
 
 const mockPush = jest.fn();
@@ -39,9 +40,10 @@ jest.mock("firebase/auth", () => ({
     GoogleAuthProvider: jest.fn().mockImplementation(() => ({
         setCustomParameters: jest.fn(),
     })),
+    getRedirectResult: jest.fn(),
     reload: jest.fn(),
     signInWithEmailAndPassword: jest.fn(),
-    signInWithPopup: jest.fn(),
+    signInWithRedirect: jest.fn(),
     sendEmailVerification: jest.fn(),
 }));
 
@@ -49,22 +51,13 @@ describe("LoginPage", () => {
     beforeEach(() => {
         jest.clearAllMocks();
         (globalThis as unknown as { fetch: typeof mockFetch }).fetch = mockFetch;
+        (getRedirectResult as jest.Mock).mockResolvedValue(null);
     });
 
-    it("signs in with Google and redirects", async () => {
+    it("starts Google sign-in with redirect", async () => {
         const user = userEvent.setup();
-        const getIdToken = jest.fn().mockResolvedValue("google-id-token");
 
-        (signInWithPopup as jest.Mock).mockResolvedValueOnce({
-            user: {
-                getIdToken,
-            },
-        });
-
-        mockFetch.mockResolvedValueOnce({
-            ok: true,
-            json: async () => ({ success: true }),
-        });
+        (signInWithRedirect as jest.Mock).mockResolvedValueOnce(undefined);
 
         render(<LoginPage />);
 
@@ -77,18 +70,37 @@ describe("LoginPage", () => {
         await user.click(googleButton);
 
         await waitFor(() => {
-            expect(signInWithPopup).toHaveBeenCalled();
+            expect(signInWithRedirect).toHaveBeenCalled();
+        });
+    });
+
+    it("creates a session after returning from Google redirect", async () => {
+        const getIdToken = jest.fn().mockResolvedValue("google-id-token");
+
+        (getRedirectResult as jest.Mock).mockResolvedValueOnce({
+            user: {
+                getIdToken,
+            },
         });
 
-        expect(mockFetch).toHaveBeenCalledWith(
-            "/api/auth/firebase",
-            expect.objectContaining({
-                method: "POST",
-                headers: {
-                    Authorization: "Bearer google-id-token",
-                },
-            }),
-        );
+        mockFetch.mockResolvedValueOnce({
+            ok: true,
+            json: async () => ({ success: true }),
+        });
+
+        render(<LoginPage />);
+
+        await waitFor(() => {
+            expect(mockFetch).toHaveBeenCalledWith(
+                "/api/auth/firebase",
+                expect.objectContaining({
+                    method: "POST",
+                    headers: {
+                        Authorization: "Bearer google-id-token",
+                    },
+                }),
+            );
+        });
 
         await waitFor(() => {
             expect(mockPush).toHaveBeenCalledWith("/dashboard");

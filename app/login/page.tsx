@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/lib/firebase";
 import {
+  getRedirectResult,
   GoogleAuthProvider,
   reload,
   signInWithEmailAndPassword,
-  signInWithPopup,
+  signInWithRedirect,
 } from "firebase/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,30 +39,60 @@ async function createFirebaseSession(idToken: string) {
   }
 }
 
+function createGoogleProvider() {
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({
+    prompt: "select_account",
+  });
+
+  return provider;
+}
+
 export default function LoginPage() {
   const router = useRouter();
+  const handledRedirectRef = useRef(false);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (handledRedirectRef.current) return;
+
+    handledRedirectRef.current = true;
+
+    const handleRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+
+        if (!result) return;
+
+        setLoading(true);
+
+        const idToken = await result.user.getIdToken(true);
+        await createFirebaseSession(idToken);
+
+        toast.success("Login successful");
+        router.push("/dashboard");
+        router.refresh();
+      } catch (err: unknown) {
+        console.error(err);
+        const message =
+          err instanceof Error ? err.message : "Google sign-in failed.";
+        toast.error(message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    handleRedirectResult();
+  }, [router]);
+
   const handleGoogleLogin = async () => {
     try {
       setLoading(true);
 
-      const provider = new GoogleAuthProvider();
-      provider.setCustomParameters({
-        prompt: "select_account",
-      });
-
-      const result = await signInWithPopup(auth, provider);
-      const idToken = await result.user.getIdToken(true);
-
-      await createFirebaseSession(idToken);
-
-      toast.success("Login successful");
-      router.push("/dashboard");
-      router.refresh();
+      await signInWithRedirect(auth, createGoogleProvider());
     } catch (err: unknown) {
       console.error(err);
       const message =
