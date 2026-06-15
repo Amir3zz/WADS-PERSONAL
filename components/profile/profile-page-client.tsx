@@ -2,14 +2,9 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2, ShieldAlert, Trash2 } from "lucide-react";
-import {
-  onAuthStateChanged,
-  reload,
-  sendEmailVerification,
-  signOut,
-} from "firebase/auth";
+import { onAuthStateChanged, reload, sendEmailVerification } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,8 +27,6 @@ import {
 } from "@/components/ui/card";
 import { toast } from "sonner";
 
-const PENDING_DELETE_KEY = "pending-account-deletion";
-
 type ProfileSession = {
   id: string;
   firebaseUid: string;
@@ -48,16 +41,13 @@ type Props = {
 
 export default function ProfilePageClient({ session }: Props) {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const [currentUser, setCurrentUser] = useState(auth.currentUser);
   const [currentUserEmail, setCurrentUserEmail] = useState(session.email);
   const [currentUserName, setCurrentUserName] = useState(session.name);
   const [currentImage, setCurrentImage] = useState<string | null>(session.image);
   const [loadingAuth, setLoadingAuth] = useState(true);
-  const [pendingDeletion, setPendingDeletion] = useState(false);
   const [requestingDeletion, setRequestingDeletion] = useState(false);
-  const [deletingAccount, setDeletingAccount] = useState(false);
 
   const displayName = useMemo(
     () => currentUserName?.trim() || currentUserEmail,
@@ -87,56 +77,6 @@ export default function ProfilePageClient({ session }: Props) {
     return () => unsubscribe();
   }, [session.email, session.image, session.name]);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    setPendingDeletion(window.localStorage.getItem(PENDING_DELETE_KEY) === "true");
-  }, []);
-
-  const clearPendingDeletion = useCallback(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.removeItem(PENDING_DELETE_KEY);
-    setPendingDeletion(false);
-  }, []);
-
-  const deleteAccount = useCallback(async () => {
-    const user = currentUser ?? auth.currentUser;
-
-    if (!user) {
-      toast.error("No signed-in user found.");
-      return;
-    }
-
-    try {
-      setDeletingAccount(true);
-      await reload(user);
-
-      if (!user.emailVerified) {
-        toast.error("Please verify your email first.");
-        return;
-      }
-
-      const res = await fetch("/api/account", {
-        method: "DELETE",
-      });
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error ?? "Failed to delete account");
-      }
-
-      clearPendingDeletion();
-      await signOut(auth);
-      toast.success("Your account has been deleted.");
-      router.push("/login");
-      router.refresh();
-    } catch (error) {
-      console.error(error);
-      toast.error(error instanceof Error ? error.message : "Failed to delete account");
-    } finally {
-      setDeletingAccount(false);
-    }
-  }, [clearPendingDeletion, currentUser, router]);
-
   const requestAccountDeletion = useCallback(async () => {
     const user = currentUser ?? auth.currentUser;
 
@@ -148,45 +88,25 @@ export default function ProfilePageClient({ session }: Props) {
     try {
       setRequestingDeletion(true);
 
-      window.localStorage.setItem(PENDING_DELETE_KEY, "true");
-      setPendingDeletion(true);
+      await reload(user);
 
       await sendEmailVerification(user, {
-        url: `${window.location.origin}/profile?delete=1`,
+        url: `${window.location.origin}/verify-delete`,
+        handleCodeInApp: true,
       });
 
-      toast.success("A verification email has been sent. After verifying it, your account will be deleted.");
+      toast.success(
+        "A verification email has been sent. Open it to finish deleting your account."
+      );
     } catch (error) {
       console.error(error);
-      window.localStorage.removeItem(PENDING_DELETE_KEY);
-      setPendingDeletion(false);
-      toast.error(error instanceof Error ? error.message : "Failed to send verification email");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to send verification email"
+      );
     } finally {
       setRequestingDeletion(false);
     }
   }, [currentUser]);
-
-  useEffect(() => {
-    const shouldDelete = pendingDeletion && searchParams.get("delete") === "1";
-    if (!shouldDelete || !currentUser) return;
-
-    let cancelled = false;
-
-    const run = async () => {
-      await reload(currentUser);
-      if (cancelled) return;
-
-      if (currentUser.emailVerified) {
-        await deleteAccount();
-      }
-    };
-
-    void run();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [pendingDeletion, searchParams, deleteAccount, currentUser]);
 
   if (loadingAuth) {
     return (
@@ -278,28 +198,38 @@ export default function ProfilePageClient({ session }: Props) {
                   <div>
                     <h2 className="text-lg font-semibold text-destructive">Delete account</h2>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      A verification email will be sent first. Once you verify it, your account and all of its study data will be removed automatically.
+                      A verification email will be sent first. Once you verify it, your account
+                      and all of its study data will be removed automatically.
                     </p>
                   </div>
 
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="destructive" className="gap-2" disabled={requestingDeletion || deletingAccount}>
+                      <Button
+                        variant="destructive"
+                        className="gap-2"
+                        disabled={requestingDeletion}
+                      >
                         <Trash2 className="h-4 w-4" />
-                        {requestingDeletion || deletingAccount ? "Please wait…" : "Delete account"}
+                        {requestingDeletion ? "Sending email…" : "Delete account"}
                       </Button>
                     </AlertDialogTrigger>
+
                     <AlertDialogContent>
                       <AlertDialogHeader>
                         <AlertDialogTitle>Delete your account?</AlertDialogTitle>
                         <AlertDialogDescription>
-                          We will send a verification email to <span className="font-medium">{currentUserEmail}</span>. After you verify it, your account will be deleted automatically.
+                          We will send a verification email to{" "}
+                          <span className="font-medium">{currentUserEmail}</span>. After you
+                          open the link in that email, your account and study data will be
+                          deleted.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
+
                       <AlertDialogFooter>
-                        <AlertDialogCancel>No take me back</AlertDialogCancel>
+                        <AlertDialogCancel>No, take me back</AlertDialogCancel>
                         <AlertDialogAction onClick={requestAccountDeletion}>
-                          Yes I am sure
+                          Yes, send the email
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
