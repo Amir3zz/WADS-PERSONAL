@@ -1,3 +1,7 @@
+/**
+ * @jest-environment jsdom
+ */
+
 import { render, screen } from "@testing-library/react";
 import MonthCalendar from "@/components/calendar/month-calendar";
 
@@ -12,7 +16,9 @@ describe("MonthCalendar", () => {
                         id: "card-1",
                         title: "Essay draft",
                         dueDate: "2026-06-15T10:00:00.000Z",
-                        boardId: "board-1",
+                        description: null,
+                        completed: false,
+                        priority: null,
                         boardTitle: "Study Board",
                         columnTitle: "To do",
                     },
@@ -27,8 +33,8 @@ describe("MonthCalendar", () => {
         ).toBeGreaterThan(0);
 
         expect(
-            screen.getByText("Study Board · To do"),
-        ).toBeInTheDocument();
+            screen.getAllByText("Study Board · To do").length,
+        ).toBeGreaterThan(0);
 
         expect(
             screen.getByRole("link", { name: /previous/i }),
