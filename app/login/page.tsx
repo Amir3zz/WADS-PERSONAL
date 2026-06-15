@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/lib/firebase";
 import {
   GoogleAuthProvider,
+  getRedirectResult,
   reload,
   signInWithEmailAndPassword,
-  signInWithPopup,
+  signInWithRedirect,
 } from "firebase/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,45 +25,71 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 
+async function createFirebaseSession(idToken: string) {
+  const res = await fetch("/api/auth/firebase", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${idToken}`,
+    },
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.message ?? data.error ?? "Failed to create session");
+  }
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const createFirebaseSession = async (idToken: string) => {
-    const res = await fetch("/api/auth/firebase", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${idToken}`,
-      },
-    });
+  useEffect(() => {
+    let cancelled = false;
 
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      throw new Error(data.message ?? data.error ?? "Failed to create session");
-    }
-  };
+    const handleRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+
+        if (!result?.user || cancelled) {
+          return;
+        }
+
+        const idToken = await result.user.getIdToken(true);
+        await createFirebaseSession(idToken);
+
+        toast.success("Login successful");
+        router.push("/dashboard");
+        router.refresh();
+      } catch (err: unknown) {
+        if (cancelled) return;
+
+        console.error(err);
+        const message =
+          err instanceof Error ? err.message : "Google sign-in failed.";
+        toast.error(message);
+      }
+    };
+
+    void handleRedirectResult();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
 
   const handleGoogleLogin = async () => {
     try {
       setLoading(true);
 
       const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      const idToken = await result.user.getIdToken();
-
-      await createFirebaseSession(idToken);
-
-      toast.success("Login successful");
-      router.push("/dashboard");
-      router.refresh();
+      await signInWithRedirect(auth, provider);
     } catch (err: unknown) {
       console.error(err);
       const message =
         err instanceof Error ? err.message : "Google sign-in failed.";
       toast.error(message);
-    } finally {
       setLoading(false);
     }
   };
@@ -97,7 +124,7 @@ export default function LoginPage() {
       const result = await signInWithEmailAndPassword(
         auth,
         email.trim(),
-        password
+        password,
       );
 
       await reload(result.user);
@@ -109,7 +136,6 @@ export default function LoginPage() {
       }
 
       const idToken = await result.user.getIdToken(true);
-
       await createFirebaseSession(idToken);
 
       toast.success("Login successful");
@@ -183,7 +209,7 @@ export default function LoginPage() {
 
             <Button
               type="submit"
-              className="w-full h-10 font-medium"
+              className="h-10 w-full font-medium"
               disabled={loading}
             >
               {loading ? "Signing in…" : "Sign in with Email"}
