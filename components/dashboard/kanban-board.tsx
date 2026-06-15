@@ -99,7 +99,11 @@ export default function KanbanBoard({ board }: KanbanBoardProps) {
   };
 
   const moveColumn = (targetColumnId: string) => {
-    if (!draggedItem || draggedItem.type !== "column" || draggedItem.columnId === targetColumnId) {
+    if (
+      !draggedItem ||
+      draggedItem.type !== "column" ||
+      draggedItem.columnId === targetColumnId
+    ) {
       return;
     }
 
@@ -156,12 +160,19 @@ export default function KanbanBoard({ board }: KanbanBoardProps) {
           <p className="mt-1 text-muted-foreground">
             {columns.length} columns · {totalCards} cards
           </p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Drag columns to reorder them, and drag cards between columns to move them.
+          </p>
         </div>
 
         <AddColumnForm boardId={board.id} />
       </div>
 
-      <div className="flex gap-4 overflow-x-auto pb-4">
+      <div
+        className="flex gap-4 overflow-x-auto pb-4"
+        role="list"
+        aria-label={`Kanban board for ${board.title}`}
+      >
         {columns.map((column) => (
           <KanbanColumn
             key={column.id}

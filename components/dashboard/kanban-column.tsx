@@ -129,6 +129,8 @@ export default function KanbanColumn({
       onDragOver={onColumnDragOver}
       onDrop={onColumnDrop}
       onDragEnd={onDragEnd}
+      aria-label={`Column ${column.title}`}
+      aria-grabbed={dragging}
       className={`w-[320px] shrink-0 ${dragging ? "cursor-grabbing opacity-60" : "cursor-grab"}`}
     >
       <Card className="h-full border-border/70 shadow-sm">
@@ -138,7 +140,10 @@ export default function KanbanColumn({
               <div className="flex items-center justify-between gap-3">
                 <h3 className="text-lg font-semibold">{column.title}</h3>
                 <div className="flex items-center gap-2">
-                  <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                  <span
+                    className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground"
+                    aria-label={`${column.cards.length} cards in this column`}
+                  >
                     {column.cards.length}
                   </span>
 
@@ -151,6 +156,8 @@ export default function KanbanColumn({
                       setTitle(column.title);
                       setEditing(true);
                     }}
+                    aria-label={`Edit column ${column.title}`}
+                    title={`Edit column ${column.title}`}
                   >
                     <Pencil className="h-4 w-4" />
                   </Button>
@@ -162,6 +169,8 @@ export default function KanbanColumn({
                     className="h-8 w-8 text-destructive"
                     onClick={handleDelete}
                     disabled={loading}
+                    aria-label={`Delete column ${column.title}`}
+                    title={`Delete column ${column.title}`}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -175,6 +184,7 @@ export default function KanbanColumn({
                   event.dataTransfer.dropEffect = "move";
                 }}
                 onDrop={onColumnCardDrop}
+                aria-label={`Cards in ${column.title}`}
               >
                 {column.cards.map((card) => (
                   <KanbanCard
@@ -205,18 +215,31 @@ export default function KanbanColumn({
                   size="icon"
                   className="h-8 w-8"
                   onClick={() => setEditing(false)}
+                  aria-label="Cancel editing column"
+                  title="Cancel"
                 >
                   <X className="h-4 w-4" />
                 </Button>
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium">Title</label>
-                <Input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={60} />
+                <label className="mb-1 block text-sm font-medium" htmlFor={`column-title-${column.id}`}>
+                  Title
+                </label>
+                <Input
+                  id={`column-title-${column.id}`}
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  maxLength={60}
+                />
               </div>
 
               <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={() => setEditing(false)}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setEditing(false)}
+                >
                   Cancel
                 </Button>
                 <Button type="submit" disabled={loading}>

@@ -46,18 +46,22 @@ export default function LogoutButton() {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive">Sign out</Button>
+        <Button variant="destructive" aria-label="Sign out of your account">
+          Log out
+        </Button>
       </AlertDialogTrigger>
+
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Sign out</AlertDialogTitle>
+          <AlertDialogTitle>Sign out of your account?</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to sign out?
+            You will need to sign in again to access your dashboard and study boards.
           </AlertDialogDescription>
         </AlertDialogHeader>
+
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={handleLogout} disabled={loading}>
+          <AlertDialogCancel aria-label="Cancel logout">Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={handleLogout} disabled={loading} aria-label="Confirm logout">
             {loading ? "Signing out…" : "Yes, sign out"}
           </AlertDialogAction>
         </AlertDialogFooter>

@@ -2,7 +2,14 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronDown, ChevronUp, Pencil, Save, Trash2, X } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  Pencil,
+  Save,
+  Trash2,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -75,10 +82,7 @@ function parseSubtasks(value: string | null): string[] {
   }
 }
 
-const priorityStyles: Record<
-  NonNullable<KanbanCardProps["card"]["priority"]>,
-  string
-> = {
+const priorityStyles: Record<NonNullable<KanbanCardProps["card"]["priority"]>, string> = {
   HIGH: "bg-red-500/10 text-red-700",
   MEDIUM: "bg-amber-500/10 text-amber-700",
   LOW: "bg-emerald-500/10 text-emerald-700",
@@ -179,6 +183,8 @@ export default function KanbanCard({
       onDragOver={onDragOver}
       onDrop={onDrop}
       onDragEnd={onDragEnd}
+      aria-grabbed={dragging}
+      aria-label={`Task card ${card.title}`}
       className={`rounded-2xl border bg-background p-3 shadow-sm transition hover:shadow-md ${dragging ? "cursor-grabbing opacity-60" : "cursor-grab"
         }`}
     >
@@ -229,6 +235,8 @@ export default function KanbanCard({
                 type="button"
                 onClick={() => setShowAiDetails((value) => !value)}
                 className="flex w-full items-center justify-between gap-3 text-left"
+                aria-expanded={showAiDetails}
+                aria-controls={`ai-details-${card.id}`}
               >
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -247,7 +255,7 @@ export default function KanbanCard({
               </button>
 
               {showAiDetails ? (
-                <div className="mt-3 space-y-3">
+                <div id={`ai-details-${card.id}`} className="mt-3 space-y-3">
                   {aiSubtasks.length > 0 ? (
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -256,7 +264,7 @@ export default function KanbanCard({
                       <ul className="mt-2 space-y-1 text-sm">
                         {aiSubtasks.map((task, index) => (
                           <li key={`${task}-${index}`} className="flex gap-2">
-                            <span>•</span>
+                            <span aria-hidden="true">•</span>
                             <span>{task}</span>
                           </li>
                         ))}
@@ -294,8 +302,11 @@ export default function KanbanCard({
                 setDescription(card.description ?? "");
                 setDueDate(toDateTimeLocalValue(card.dueDate));
                 setCompleted(card.completed);
+                setShowAiDetails(false);
                 setEditing(true);
               }}
+              aria-label={`Edit card ${card.title}`}
+              title={`Edit card ${card.title}`}
             >
               <Pencil className="h-4 w-4" />
             </Button>
@@ -307,6 +318,8 @@ export default function KanbanCard({
               className="h-8 w-8 text-destructive"
               onClick={handleDelete}
               disabled={loading}
+              aria-label={`Delete card ${card.title}`}
+              title={`Delete card ${card.title}`}
             >
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -322,19 +335,34 @@ export default function KanbanCard({
               size="icon"
               className="h-8 w-8"
               onClick={() => setEditing(false)}
+              aria-label="Cancel editing card"
+              title="Cancel"
             >
               <X className="h-4 w-4" />
             </Button>
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium">Title</label>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={120} />
+            <label className="mb-1 block text-sm font-medium" htmlFor={`card-title-${card.id}`}>
+              Title
+            </label>
+            <Input
+              id={`card-title-${card.id}`}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              maxLength={120}
+            />
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium">Description</label>
+            <label
+              className="mb-1 block text-sm font-medium"
+              htmlFor={`card-description-${card.id}`}
+            >
+              Description
+            </label>
             <textarea
+              id={`card-description-${card.id}`}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               maxLength={500}
@@ -343,16 +371,20 @@ export default function KanbanCard({
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium">Due date and time</label>
+            <label className="mb-1 block text-sm font-medium" htmlFor={`card-due-${card.id}`}>
+              Due date and time
+            </label>
             <Input
+              id={`card-due-${card.id}`}
               type="datetime-local"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
             />
           </div>
 
-          <label className="flex items-center gap-2 text-sm">
+          <label className="flex items-center gap-2 text-sm" htmlFor={`card-completed-${card.id}`}>
             <input
+              id={`card-completed-${card.id}`}
               type="checkbox"
               checked={completed}
               onChange={(e) => setCompleted(e.target.checked)}
