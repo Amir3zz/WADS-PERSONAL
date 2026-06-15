@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import {
     reload,
     signInWithEmailAndPassword,
+    signInWithPopup,
 } from "firebase/auth";
 
 const mockPush = jest.fn();
@@ -35,7 +36,9 @@ jest.mock("sonner", () => ({
 }));
 
 jest.mock("firebase/auth", () => ({
-    GoogleAuthProvider: jest.fn(),
+    GoogleAuthProvider: jest.fn().mockImplementation(() => ({
+        setCustomParameters: jest.fn(),
+    })),
     reload: jest.fn(),
     signInWithEmailAndPassword: jest.fn(),
     signInWithPopup: jest.fn(),
@@ -43,23 +46,25 @@ jest.mock("firebase/auth", () => ({
 }));
 
 describe("LoginPage", () => {
-    const originalGoogleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-
     beforeEach(() => {
         jest.clearAllMocks();
         (globalThis as unknown as { fetch: typeof mockFetch }).fetch = mockFetch;
-        process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID = originalGoogleClientId;
-        delete (window as typeof window & { google?: unknown }).google;
     });
 
-    afterAll(() => {
-        process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID = originalGoogleClientId;
-    });
-
-    it("keeps the Google login button clickable while Google sign-in is unavailable", async () => {
+    it("signs in with Google and redirects", async () => {
         const user = userEvent.setup();
+        const getIdToken = jest.fn().mockResolvedValue("google-id-token");
 
-        delete process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+        (signInWithPopup as jest.Mock).mockResolvedValueOnce({
+            user: {
+                getIdToken,
+            },
+        });
+
+        mockFetch.mockResolvedValueOnce({
+            ok: true,
+            json: async () => ({ success: true }),
+        });
 
         render(<LoginPage />);
 
@@ -71,7 +76,23 @@ describe("LoginPage", () => {
 
         await user.click(googleButton);
 
-        expect(toast.error).toHaveBeenCalledWith("Missing Google client ID.");
+        await waitFor(() => {
+            expect(signInWithPopup).toHaveBeenCalled();
+        });
+
+        expect(mockFetch).toHaveBeenCalledWith(
+            "/api/auth/firebase",
+            expect.objectContaining({
+                method: "POST",
+                headers: {
+                    Authorization: "Bearer google-id-token",
+                },
+            }),
+        );
+
+        await waitFor(() => {
+            expect(mockPush).toHaveBeenCalledWith("/dashboard");
+        });
     });
 
     it("does not submit when the email is invalid", async () => {

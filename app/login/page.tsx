@@ -1,15 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import Script from "next/script";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/lib/firebase";
 import {
   GoogleAuthProvider,
   reload,
-  signInWithCredential,
   signInWithEmailAndPassword,
+  signInWithPopup,
 } from "firebase/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,24 +23,6 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-
-declare global {
-  interface Window {
-    google?: {
-      accounts?: {
-        oauth2?: {
-          initTokenClient: (config: {
-            client_id: string;
-            scope: string;
-            callback: (response: { access_token?: string }) => void;
-          }) => {
-            requestAccessToken: (options?: { prompt?: string }) => void;
-          };
-        };
-      };
-    };
-  }
-}
 
 async function createFirebaseSession(idToken: string) {
   const res = await fetch("/api/auth/firebase", {
@@ -60,92 +41,34 @@ async function createFirebaseSession(idToken: string) {
 export default function LoginPage() {
   const router = useRouter();
 
-  const googleTokenClientRef = useRef<{
-    requestAccessToken: (options?: { prompt?: string }) => void;
-  } | null>(null);
-
-  const googleInitializedRef = useRef(false);
-  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [googleReady, setGoogleReady] = useState(false);
 
-  const initializeGoogleClient = () => {
-    if (googleInitializedRef.current) return;
-    if (!googleClientId) return;
-    if (!window.google?.accounts?.oauth2) return;
-
-    googleInitializedRef.current = true;
-
-    googleTokenClientRef.current = window.google.accounts.oauth2.initTokenClient(
-      {
-        client_id: googleClientId,
-        scope: "openid email profile",
-        callback: async (response: { access_token?: string }) => {
-          try {
-            setLoading(true);
-
-            if (!response.access_token) {
-              throw new Error("Google sign-in did not return an access token.");
-            }
-
-            const firebaseCredential = GoogleAuthProvider.credential(
-              null,
-              response.access_token,
-            );
-
-            const result = await signInWithCredential(auth, firebaseCredential);
-            const idToken = await result.user.getIdToken(true);
-
-            await createFirebaseSession(idToken);
-
-            toast.success("Login successful");
-            router.push("/dashboard");
-            router.refresh();
-          } catch (err: unknown) {
-            console.error(err);
-            const message =
-              err instanceof Error ? err.message : "Google sign-in failed.";
-            toast.error(message);
-          } finally {
-            setLoading(false);
-          }
-        },
-      },
-    );
-
-    setGoogleReady(true);
-  };
-
-  useEffect(() => {
-    initializeGoogleClient();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [googleClientId]);
-
-  const handleGoogleLogin = () => {
+  const handleGoogleLogin = async () => {
     try {
-      if (!googleClientId) {
-        toast.error("Missing Google client ID.");
-        return;
-      }
+      setLoading(true);
 
-      if (!googleTokenClientRef.current) {
-        toast.error("Google sign-in is still loading. Please try again.");
-        return;
-      }
-
-      // Do not set loading here.
-      // Only set loading when the access token callback returns.
-      googleTokenClientRef.current.requestAccessToken({
-        prompt: "consent",
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({
+        prompt: "select_account",
       });
+
+      const result = await signInWithPopup(auth, provider);
+      const idToken = await result.user.getIdToken(true);
+
+      await createFirebaseSession(idToken);
+
+      toast.success("Login successful");
+      router.push("/dashboard");
+      router.refresh();
     } catch (err: unknown) {
       console.error(err);
       const message =
         err instanceof Error ? err.message : "Google sign-in failed.";
       toast.error(message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -206,12 +129,6 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-background to-muted/30 px-4 py-10">
-      <Script
-        src="https://accounts.google.com/gsi/client?hl=en"
-        strategy="afterInteractive"
-        onLoad={initializeGoogleClient}
-      />
-
       <Card className="w-full max-w-md border-0 shadow-xl shadow-primary/5 sm:border">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-2xl font-semibold tracking-tight">
@@ -232,12 +149,6 @@ export default function LoginPage() {
           >
             Continue with Google
           </Button>
-
-          {!googleReady ? (
-            <p className="text-center text-xs text-muted-foreground">
-              Loading Google sign-in…
-            </p>
-          ) : null}
 
           <div className="flex items-center gap-2">
             <Separator className="flex-1" />
