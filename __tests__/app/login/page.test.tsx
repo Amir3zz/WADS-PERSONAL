@@ -43,9 +43,35 @@ jest.mock("firebase/auth", () => ({
 }));
 
 describe("LoginPage", () => {
+    const originalGoogleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+
     beforeEach(() => {
         jest.clearAllMocks();
         (globalThis as unknown as { fetch: typeof mockFetch }).fetch = mockFetch;
+        process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID = originalGoogleClientId;
+        delete (window as typeof window & { google?: unknown }).google;
+    });
+
+    afterAll(() => {
+        process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID = originalGoogleClientId;
+    });
+
+    it("keeps the Google login button clickable while Google sign-in is unavailable", async () => {
+        const user = userEvent.setup();
+
+        delete process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+
+        render(<LoginPage />);
+
+        const googleButton = screen.getByRole("button", {
+            name: /continue with google/i,
+        });
+
+        expect(googleButton).toBeEnabled();
+
+        await user.click(googleButton);
+
+        expect(toast.error).toHaveBeenCalledWith("Missing Google client ID.");
     });
 
     it("does not submit when the email is invalid", async () => {

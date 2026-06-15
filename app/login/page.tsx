@@ -228,7 +228,7 @@ export default function LoginPage() {
             variant="outline"
             className="w-full"
             onClick={handleGoogleLogin}
-            disabled={!googleReady || loading}
+            disabled={loading}
           >
             Continue with Google
           </Button>
