@@ -1,5 +1,11 @@
 import type { NextConfig } from "next";
 
+const firebaseAuthDomain =
+  process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ??
+  (process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    ? `${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}.firebaseapp.com`
+    : undefined);
+
 const nextConfig: NextConfig = {
   output: "standalone",
   images: {
@@ -17,6 +23,16 @@ const nextConfig: NextConfig = {
         search: "",
       },
     ],
+  },
+  async rewrites() {
+    if (!firebaseAuthDomain) return [];
+
+    return [
+      {
+        source: "/__/auth/:path*",
+        destination: `https://${firebaseAuthDomain}/__/auth/:path*`,
+      },
+    ];
   },
 };
 
