@@ -29,27 +29,14 @@ declare global {
   interface Window {
     google?: {
       accounts?: {
-        id?: {
-          initialize: (config: {
+        oauth2?: {
+          initTokenClient: (config: {
             client_id: string;
-            callback: (response: { credential?: string }) => void;
-          }) => void;
-          renderButton: (
-            parent: HTMLElement,
-            options?: {
-              theme?: "outline" | "filled_blue" | "filled_black";
-              size?: "large" | "medium" | "small";
-              text?:
-              | "signin_with"
-              | "signup_with"
-              | "continue_with"
-              | "signin";
-              shape?: "rectangular" | "pill" | "circle" | "square";
-              width?: string | number;
-              logo_alignment?: "left" | "center";
-              locale?: string;
-            },
-          ) => void;
+            scope: string;
+            callback: (response: { access_token?: string }) => void;
+          }) => {
+            requestAccessToken: (options?: { prompt?: string }) => void;
+          };
         };
       };
     };
@@ -72,76 +59,95 @@ async function createFirebaseSession(idToken: string) {
 
 export default function LoginPage() {
   const router = useRouter();
-  const googleButtonRef = useRef<HTMLDivElement>(null);
+
+  const googleTokenClientRef = useRef<{
+    requestAccessToken: (options?: { prompt?: string }) => void;
+  } | null>(null);
+
   const googleInitializedRef = useRef(false);
+  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleReady, setGoogleReady] = useState(false);
 
-  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-
-  const handleGoogleCredential = async (credential: string) => {
-    const firebaseCredential = GoogleAuthProvider.credential(credential);
-    const result = await signInWithCredential(auth, firebaseCredential);
-    const idToken = await result.user.getIdToken(true);
-
-    await createFirebaseSession(idToken);
-
-    toast.success("Login successful");
-    router.push("/dashboard");
-    router.refresh();
-  };
-
-  const initializeGoogleButton = () => {
+  const initializeGoogleClient = () => {
     if (googleInitializedRef.current) return;
     if (!googleClientId) return;
-    if (!window.google?.accounts?.id) return;
-    if (!googleButtonRef.current) return;
+    if (!window.google?.accounts?.oauth2) return;
 
     googleInitializedRef.current = true;
 
-    window.google.accounts.id.initialize({
-      client_id: googleClientId,
-      callback: async (response: { credential?: string }) => {
-        try {
-          setLoading(true);
+    googleTokenClientRef.current = window.google.accounts.oauth2.initTokenClient(
+      {
+        client_id: googleClientId,
+        scope: "openid email profile",
+        callback: async (response: { access_token?: string }) => {
+          try {
+            setLoading(true);
 
-          if (!response.credential) {
-            throw new Error("Google sign-in did not return a credential.");
+            if (!response.access_token) {
+              throw new Error("Google sign-in did not return an access token.");
+            }
+
+            const firebaseCredential = GoogleAuthProvider.credential(
+              null,
+              response.access_token,
+            );
+
+            const result = await signInWithCredential(auth, firebaseCredential);
+            const idToken = await result.user.getIdToken(true);
+
+            await createFirebaseSession(idToken);
+
+            toast.success("Login successful");
+            router.push("/dashboard");
+            router.refresh();
+          } catch (err: unknown) {
+            console.error(err);
+            const message =
+              err instanceof Error ? err.message : "Google sign-in failed.";
+            toast.error(message);
+          } finally {
+            setLoading(false);
           }
-
-          await handleGoogleCredential(response.credential);
-        } catch (err: unknown) {
-          console.error(err);
-          const message =
-            err instanceof Error ? err.message : "Google sign-in failed.";
-          toast.error(message);
-        } finally {
-          setLoading(false);
-        }
+        },
       },
-    });
-
-    googleButtonRef.current.innerHTML = "";
-    window.google.accounts.id.renderButton(googleButtonRef.current, {
-      theme: "outline",
-      size: "large",
-      text: "continue_with",
-      shape: "rectangular",
-      logo_alignment: "left",
-      width: 320,
-      locale: "en",
-    });
+    );
 
     setGoogleReady(true);
   };
 
   useEffect(() => {
-    initializeGoogleButton();
+    initializeGoogleClient();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [googleClientId]);
+
+  const handleGoogleLogin = () => {
+    try {
+      if (!googleClientId) {
+        toast.error("Missing Google client ID.");
+        return;
+      }
+
+      if (!googleTokenClientRef.current) {
+        toast.error("Google sign-in is still loading. Please try again.");
+        return;
+      }
+
+      // Do not set loading here.
+      // Only set loading when the access token callback returns.
+      googleTokenClientRef.current.requestAccessToken({
+        prompt: "consent",
+      });
+    } catch (err: unknown) {
+      console.error(err);
+      const message =
+        err instanceof Error ? err.message : "Google sign-in failed.";
+      toast.error(message);
+    }
+  };
 
   const validateEmailPassword = (): string | null => {
     const trimmedEmail = email.trim();
@@ -203,7 +209,7 @@ export default function LoginPage() {
       <Script
         src="https://accounts.google.com/gsi/client?hl=en"
         strategy="afterInteractive"
-        onLoad={initializeGoogleButton}
+        onLoad={initializeGoogleClient}
       />
 
       <Card className="w-full max-w-md border-0 shadow-xl shadow-primary/5 sm:border">
@@ -217,17 +223,21 @@ export default function LoginPage() {
         </CardHeader>
 
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <div className="flex justify-center">
-              <div ref={googleButtonRef} />
-            </div>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={handleGoogleLogin}
+            disabled={!googleReady || loading}
+          >
+            Continue with Google
+          </Button>
 
-            {!googleReady ? (
-              <p className="text-center text-xs text-muted-foreground">
-                Loading Google sign-in…
-              </p>
-            ) : null}
-          </div>
+          {!googleReady ? (
+            <p className="text-center text-xs text-muted-foreground">
+              Loading Google sign-in…
+            </p>
+          ) : null}
 
           <div className="flex items-center gap-2">
             <Separator className="flex-1" />
