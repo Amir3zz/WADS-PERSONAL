@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   db:
     image: postgres:16-alpine
@@ -31,9 +33,9 @@ services:
         FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID}
         FIREBASE_CLIENT_EMAIL: ${FIREBASE_CLIENT_EMAIL}
         FIREBASE_PRIVATE_KEY: ${FIREBASE_PRIVATE_KEY}
-        OPENAI_API_KEY: ${OPENAI_API_KEY}
-        OPENAI_MODEL: ${OPENAI_MODEL}
-        USE_LOCAL_AI: ${USE_LOCAL_AI}
+        BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+        BETTER_AUTH_URL: ${BETTER_AUTH_URL}
+        NEXT_PUBLIC_BETTER_AUTH_URL: ${NEXT_PUBLIC_BETTER_AUTH_URL}
 
     restart: unless-stopped
     env_file:

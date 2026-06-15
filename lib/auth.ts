@@ -5,6 +5,7 @@ import type { DecodedIdToken } from "firebase-admin/auth";
 
 export interface SessionUser {
   id: string;
+  firebaseUid: string;
   email: string;
   name: string | null;
   image: string | null;
@@ -36,6 +37,7 @@ export async function getSession(): Promise<SessionUser | null> {
 
     return {
       id: user.id,
+      firebaseUid: user.firebaseUid,
       email: user.email,
       name: user.name,
       image: user.image,

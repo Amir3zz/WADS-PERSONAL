@@ -1,5 +1,3 @@
-import { redirect } from "next/navigation";
-
 export default function BoardPage() {
-  redirect("/dashboard");
+  return <div>Board Page</div>;
 }
