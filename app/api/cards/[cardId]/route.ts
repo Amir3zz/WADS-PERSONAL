@@ -68,27 +68,32 @@ export const PATCH = withAuth(
 
     if (body?.title !== undefined) {
       const title = text(body.title);
+
       if (!title) {
         return jsonError("Title is required", 400);
       }
+
       if (title.length > MAX_TITLE_LENGTH) {
         return jsonError(
           `Title must be ${MAX_TITLE_LENGTH} characters or less`,
           400,
         );
       }
+
       data.title = title;
       shouldRegenerateAI = true;
     }
 
     if (body?.description !== undefined) {
       const description = text(body.description);
+
       if (description.length > MAX_DESCRIPTION_LENGTH) {
         return jsonError(
           `Description must be ${MAX_DESCRIPTION_LENGTH} characters or less`,
           400,
         );
       }
+
       data.description = description || null;
       shouldRegenerateAI = true;
     }
@@ -113,23 +118,30 @@ export const PATCH = withAuth(
 
     if (body?.completed !== undefined) {
       const completed = booleanValue(body.completed);
+
       if (completed === null) {
         return jsonError("Completed must be a boolean", 400);
       }
+
       data.completed = completed;
     }
 
     if (body?.position !== undefined) {
       const position = nonNegativeInteger(body.position);
+
       if (position === null) {
         return jsonError("Position must be a non-negative integer", 400);
       }
+
       data.position = position;
     }
 
     if (Object.keys(data).length === 0) {
       return jsonError("No changes provided", 400);
     }
+
+    const cardWillBeCompleted =
+      data.completed !== undefined ? data.completed : existingCard.completed;
 
     let aiData:
       | {
@@ -139,7 +151,7 @@ export const PATCH = withAuth(
         }
       | undefined;
 
-    if (shouldRegenerateAI) {
+    if (shouldRegenerateAI && !cardWillBeCompleted) {
       const nextTitle = data.title ?? existingCard.title;
       const nextDescription =
         data.description !== undefined

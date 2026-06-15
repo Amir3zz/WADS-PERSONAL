@@ -185,14 +185,21 @@ export default function KanbanCard({
       onDragEnd={onDragEnd}
       aria-grabbed={dragging}
       aria-label={`Task card ${card.title}`}
-      className={`rounded-2xl border bg-background p-3 shadow-sm transition hover:shadow-md ${dragging ? "cursor-grabbing opacity-60" : "cursor-grab"
-        }`}
+      className={`rounded-2xl border p-3 shadow-sm transition hover:shadow-md ${card.completed
+          ? "border-blue-300 bg-blue-50 dark:border-blue-700 dark:bg-blue-950/30"
+          : "bg-background"
+        } ${dragging ? "cursor-grabbing opacity-60" : "cursor-grab"}`}
     >
       {!editing ? (
         <>
           <div className="mb-2 flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="font-medium leading-snug">{card.title}</p>
+              <p
+                className={`font-medium leading-snug ${card.completed ? "text-blue-700 line-through dark:text-blue-300" : ""
+                  }`}
+              >
+                {card.title}
+              </p>
 
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 {card.priority ? (
@@ -211,7 +218,7 @@ export default function KanbanCard({
                 ) : null}
 
                 {card.completed ? (
-                  <span className="rounded-full bg-emerald-500/10 px-2 py-1 text-xs font-medium text-emerald-700">
+                  <span className="rounded-full bg-blue-500/10 px-2 py-1 text-xs font-medium text-blue-700">
                     Done
                   </span>
                 ) : (
