@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { getSession } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { getBoardTree } from "@/lib/dashboard-queries";
 import { Button } from "@/components/ui/button";
 import KanbanBoard from "@/components/dashboard/kanban-board";
 
@@ -21,35 +21,7 @@ export default async function BoardPage({ params }: BoardPageProps) {
     redirect("/login");
   }
 
-  const board = await prisma.board.findFirst({
-    where: {
-      id: boardId,
-      userId: session.id,
-    },
-    include: {
-      columns: {
-        orderBy: { position: "asc" },
-        include: {
-          cards: {
-            orderBy: { position: "asc" },
-            select: {
-              id: true,
-              title: true,
-              description: true,
-              completed: true,
-              position: true,
-              dueDate: true,
-              priority: true,
-              aiSubtasks: true,
-              aiSuggestion: true,
-              createdAt: true,
-              updatedAt: true,
-            },
-          },
-        },
-      },
-    },
-  });
+  const board = await getBoardTree(boardId, session.id);
 
   if (!board) {
     notFound();

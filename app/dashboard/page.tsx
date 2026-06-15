@@ -1,7 +1,6 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { getDashboardBoards } from "@/lib/dashboard-queries";
 import LogoutButton from "@/components/logout-button";
 import CreateBoardForm from "@/components/dashboard/create-board-form";
 import BoardCard from "@/components/dashboard/board-card";
@@ -13,23 +12,7 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const boards = await prisma.board.findMany({
-    where: { userId: session.id },
-    orderBy: { updatedAt: "desc" },
-    include: {
-      columns: {
-        orderBy: { position: "asc" },
-        include: {
-          cards: {
-            select: {
-              id: true,
-              completed: true,
-            },
-          },
-        },
-      },
-    },
-  });
+  const boards = await getDashboardBoards(session.id);
 
   const displayName = session.name?.trim() || session.email;
   const initial = (session.name?.trim()?.[0] ?? session.email?.[0] ?? "?").toUpperCase();
@@ -92,8 +75,8 @@ export default async function DashboardPage() {
           <div className="rounded-3xl border border-dashed bg-background p-10 text-center shadow-sm">
             <h3 className="text-2xl font-semibold">No boards yet</h3>
             <p className="mx-auto mt-2 max-w-md text-muted-foreground">
-              Create your first study board for Math, Biology, Literature, or anything else you are
-              organizing.
+              Create your first study board for Math, Biology, Literature, or anything else you
+              are organizing.
             </p>
             <div className="mt-6 flex justify-center">
               <CreateBoardForm />

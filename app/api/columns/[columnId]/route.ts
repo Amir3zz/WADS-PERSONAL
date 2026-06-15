@@ -1,6 +1,13 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getColumnOwnership, getColumnTree } from "@/lib/dashboard-queries";
+import {
+  jsonError,
+  nonNegativeInteger,
+  readJsonBody,
+  text,
+} from "@/lib/api-utils";
 
 type RouteContext = {
   params: Promise<{
@@ -8,30 +15,20 @@ type RouteContext = {
   }>;
 };
 
+const MAX_TITLE_LENGTH = 60;
+
 export async function GET(_req: Request, context: RouteContext) {
   const { columnId } = await context.params;
   const session = await getSession();
 
   if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return jsonError("Unauthorized", 401);
   }
 
-  const column = await prisma.column.findFirst({
-    where: {
-      id: columnId,
-      board: {
-        userId: session.id,
-      },
-    },
-    include: {
-      cards: {
-        orderBy: { position: "asc" },
-      },
-    },
-  });
+  const column = await getColumnTree(columnId, session.id);
 
   if (!column) {
-    return NextResponse.json({ error: "Column not found" }, { status: 404 });
+    return jsonError("Column not found", 404);
   }
 
   return NextResponse.json(column);
@@ -42,24 +39,16 @@ export async function PATCH(req: Request, context: RouteContext) {
   const session = await getSession();
 
   if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return jsonError("Unauthorized", 401);
   }
 
-  const column = await prisma.column.findFirst({
-    where: {
-      id: columnId,
-      board: {
-        userId: session.id,
-      },
-    },
-    select: { id: true },
-  });
+  const column = await getColumnOwnership(columnId, session.id);
 
   if (!column) {
-    return NextResponse.json({ error: "Column not found" }, { status: 404 });
+    return jsonError("Column not found", 404);
   }
 
-  const body = await req.json().catch(() => null);
+  const body = await readJsonBody(req);
 
   const data: {
     title?: string;
@@ -67,19 +56,26 @@ export async function PATCH(req: Request, context: RouteContext) {
   } = {};
 
   if (body?.title !== undefined) {
-    const title = String(body.title ?? "").trim();
+    const title = text(body.title);
     if (!title) {
-      return NextResponse.json({ error: "Title is required" }, { status: 400 });
+      return jsonError("Title is required", 400);
+    }
+    if (title.length > MAX_TITLE_LENGTH) {
+      return jsonError(`Title must be ${MAX_TITLE_LENGTH} characters or less`, 400);
     }
     data.title = title;
   }
 
   if (body?.position !== undefined) {
-    const position = Number(body.position);
-    if (!Number.isFinite(position)) {
-      return NextResponse.json({ error: "Position must be a number" }, { status: 400 });
+    const position = nonNegativeInteger(body.position);
+    if (position === null) {
+      return jsonError("Position must be a non-negative integer", 400);
     }
     data.position = position;
+  }
+
+  if (Object.keys(data).length === 0) {
+    return jsonError("No changes provided", 400);
   }
 
   const updated = await prisma.column.update({
@@ -95,21 +91,13 @@ export async function DELETE(_req: Request, context: RouteContext) {
   const session = await getSession();
 
   if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return jsonError("Unauthorized", 401);
   }
 
-  const column = await prisma.column.findFirst({
-    where: {
-      id: columnId,
-      board: {
-        userId: session.id,
-      },
-    },
-    select: { id: true },
-  });
+  const column = await getColumnOwnership(columnId, session.id);
 
   if (!column) {
-    return NextResponse.json({ error: "Column not found" }, { status: 404 });
+    return jsonError("Column not found", 404);
   }
 
   await prisma.column.delete({

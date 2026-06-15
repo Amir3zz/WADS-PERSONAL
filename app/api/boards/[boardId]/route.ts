@@ -1,6 +1,13 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getBoardOwnership, getBoardTree } from "@/lib/dashboard-queries";
+import {
+  jsonError,
+  optionalText,
+  readJsonBody,
+  text,
+} from "@/lib/api-utils";
 
 type RouteContext = {
   params: Promise<{
@@ -8,33 +15,23 @@ type RouteContext = {
   }>;
 };
 
+const MAX_TITLE_LENGTH = 80;
+const MAX_DESCRIPTION_LENGTH = 300;
+const MAX_ICON_LENGTH = 40;
+const MAX_COLOR_LENGTH = 40;
+
 export async function GET(_req: Request, context: RouteContext) {
   const { boardId } = await context.params;
   const session = await getSession();
 
   if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return jsonError("Unauthorized", 401);
   }
 
-  const board = await prisma.board.findFirst({
-    where: {
-      id: boardId,
-      userId: session.id,
-    },
-    include: {
-      columns: {
-        orderBy: { position: "asc" },
-        include: {
-          cards: {
-            orderBy: { position: "asc" },
-          },
-        },
-      },
-    },
-  });
+  const board = await getBoardTree(boardId, session.id);
 
   if (!board) {
-    return NextResponse.json({ error: "Board not found" }, { status: 404 });
+    return jsonError("Board not found", 404);
   }
 
   return NextResponse.json(board);
@@ -45,27 +42,16 @@ export async function PATCH(req: Request, context: RouteContext) {
   const session = await getSession();
 
   if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return jsonError("Unauthorized", 401);
   }
 
-  const existingBoard = await prisma.board.findFirst({
-    where: {
-      id: boardId,
-      userId: session.id,
-    },
-    select: { id: true },
-  });
+  const existingBoard = await getBoardOwnership(boardId, session.id);
 
   if (!existingBoard) {
-    return NextResponse.json({ error: "Board not found" }, { status: 404 });
+    return jsonError("Board not found", 404);
   }
 
-  const body = await req.json().catch(() => null);
-
-  const title = String(body?.title ?? "").trim();
-  const descriptionRaw = body?.description;
-  const iconRaw = body?.icon;
-  const colorRaw = body?.color;
+  const body = await readJsonBody(req);
 
   const data: {
     title?: string;
@@ -75,25 +61,42 @@ export async function PATCH(req: Request, context: RouteContext) {
   } = {};
 
   if (body?.title !== undefined) {
+    const title = text(body.title);
     if (!title) {
-      return NextResponse.json({ error: "Title is required" }, { status: 400 });
+      return jsonError("Title is required", 400);
+    }
+    if (title.length > MAX_TITLE_LENGTH) {
+      return jsonError(`Title must be ${MAX_TITLE_LENGTH} characters or less`, 400);
     }
     data.title = title;
   }
 
   if (body?.description !== undefined) {
-    const description = String(descriptionRaw ?? "").trim();
-    data.description = description || null;
+    const description = optionalText(body.description);
+    if ((description?.length ?? 0) > MAX_DESCRIPTION_LENGTH) {
+      return jsonError(`Description must be ${MAX_DESCRIPTION_LENGTH} characters or less`, 400);
+    }
+    data.description = description;
   }
 
   if (body?.icon !== undefined) {
-    const icon = String(iconRaw ?? "").trim();
-    data.icon = icon || null;
+    const icon = optionalText(body.icon);
+    if ((icon?.length ?? 0) > MAX_ICON_LENGTH) {
+      return jsonError(`Icon must be ${MAX_ICON_LENGTH} characters or less`, 400);
+    }
+    data.icon = icon;
   }
 
   if (body?.color !== undefined) {
-    const color = String(colorRaw ?? "").trim();
-    data.color = color || null;
+    const color = optionalText(body.color);
+    if ((color?.length ?? 0) > MAX_COLOR_LENGTH) {
+      return jsonError(`Color must be ${MAX_COLOR_LENGTH} characters or less`, 400);
+    }
+    data.color = color;
+  }
+
+  if (Object.keys(data).length === 0) {
+    return jsonError("No changes provided", 400);
   }
 
   const updated = await prisma.board.update({
@@ -109,19 +112,13 @@ export async function DELETE(_req: Request, context: RouteContext) {
   const session = await getSession();
 
   if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return jsonError("Unauthorized", 401);
   }
 
-  const board = await prisma.board.findFirst({
-    where: {
-      id: boardId,
-      userId: session.id,
-    },
-    select: { id: true },
-  });
+  const board = await getBoardOwnership(boardId, session.id);
 
   if (!board) {
-    return NextResponse.json({ error: "Board not found" }, { status: 404 });
+    return jsonError("Board not found", 404);
   }
 
   await prisma.board.delete({

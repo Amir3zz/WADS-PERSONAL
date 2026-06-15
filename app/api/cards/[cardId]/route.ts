@@ -2,6 +2,15 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { generateCardAI } from "@/lib/ai";
+import { getCardContext, getCardOwnership } from "@/lib/dashboard-queries";
+import {
+  booleanValue,
+  jsonError,
+  nonNegativeInteger,
+  parseDateTime,
+  readJsonBody,
+  text,
+} from "@/lib/api-utils";
 
 type RouteContext = {
   params: Promise<{
@@ -9,24 +18,15 @@ type RouteContext = {
   }>;
 };
 
-function parseDateTimeInput(value: unknown): Date | null {
-  if (value === undefined || value === null) return null;
-
-  const text = String(value).trim();
-  if (!text) return null;
-
-  const date = new Date(text);
-  if (Number.isNaN(date.getTime())) return null;
-
-  return date;
-}
+const MAX_TITLE_LENGTH = 100;
+const MAX_DESCRIPTION_LENGTH = 500;
 
 export async function GET(_req: Request, context: RouteContext) {
   const { cardId } = await context.params;
   const session = await getSession();
 
   if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return jsonError("Unauthorized", 401);
   }
 
   const card = await prisma.card.findFirst({
@@ -41,7 +41,7 @@ export async function GET(_req: Request, context: RouteContext) {
   });
 
   if (!card) {
-    return NextResponse.json({ error: "Card not found" }, { status: 404 });
+    return jsonError("Card not found", 404);
   }
 
   return NextResponse.json(card);
@@ -52,36 +52,16 @@ export async function PATCH(req: Request, context: RouteContext) {
   const session = await getSession();
 
   if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return jsonError("Unauthorized", 401);
   }
 
-  const existingCard = await prisma.card.findFirst({
-    where: {
-      id: cardId,
-      column: {
-        board: {
-          userId: session.id,
-        },
-      },
-    },
-    include: {
-      column: {
-        include: {
-          board: {
-            select: {
-              title: true,
-            },
-          },
-        },
-      },
-    },
-  });
+  const existingCard = await getCardContext(cardId, session.id);
 
   if (!existingCard) {
-    return NextResponse.json({ error: "Card not found" }, { status: 404 });
+    return jsonError("Card not found", 404);
   }
 
-  const body = await req.json().catch(() => null);
+  const body = await readJsonBody(req);
 
   const data: {
     title?: string;
@@ -94,48 +74,62 @@ export async function PATCH(req: Request, context: RouteContext) {
   let shouldRegenerateAI = false;
 
   if (body?.title !== undefined) {
-    const title = String(body.title ?? "").trim();
+    const title = text(body.title);
     if (!title) {
-      return NextResponse.json({ error: "Title is required" }, { status: 400 });
+      return jsonError("Title is required", 400);
+    }
+    if (title.length > MAX_TITLE_LENGTH) {
+      return jsonError(`Title must be ${MAX_TITLE_LENGTH} characters or less`, 400);
     }
     data.title = title;
     shouldRegenerateAI = true;
   }
 
   if (body?.description !== undefined) {
-    const description = String(body.description ?? "").trim();
+    const description = text(body.description);
+    if (description.length > MAX_DESCRIPTION_LENGTH) {
+      return jsonError(`Description must be ${MAX_DESCRIPTION_LENGTH} characters or less`, 400);
+    }
     data.description = description || null;
     shouldRegenerateAI = true;
   }
 
   if (body?.dueDate !== undefined) {
     const dueDateRaw = body.dueDate;
-    const dueDate = parseDateTimeInput(dueDateRaw);
 
-    if (dueDateRaw !== null && String(dueDateRaw).trim() && !dueDate) {
-      return NextResponse.json(
-        { error: "Due date must be a valid date/time" },
-        { status: 400 },
-      );
+    if (dueDateRaw === null || String(dueDateRaw).trim() === "") {
+      data.dueDate = null;
+      shouldRegenerateAI = true;
+    } else {
+      const dueDate = parseDateTime(dueDateRaw);
+
+      if (!dueDate) {
+        return jsonError("Due date must be a valid date/time", 400);
+      }
+
+      data.dueDate = dueDate;
+      shouldRegenerateAI = true;
     }
-
-    data.dueDate = dueDate;
-    shouldRegenerateAI = true;
   }
 
   if (body?.completed !== undefined) {
-    data.completed = Boolean(body.completed);
+    const completed = booleanValue(body.completed);
+    if (completed === null) {
+      return jsonError("Completed must be a boolean", 400);
+    }
+    data.completed = completed;
   }
 
   if (body?.position !== undefined) {
-    const position = Number(body.position);
-    if (!Number.isFinite(position)) {
-      return NextResponse.json(
-        { error: "Position must be a number" },
-        { status: 400 },
-      );
+    const position = nonNegativeInteger(body.position);
+    if (position === null) {
+      return jsonError("Position must be a non-negative integer", 400);
     }
     data.position = position;
+  }
+
+  if (Object.keys(data).length === 0) {
+    return jsonError("No changes provided", 400);
   }
 
   let aiData:
@@ -149,9 +143,7 @@ export async function PATCH(req: Request, context: RouteContext) {
   if (shouldRegenerateAI) {
     const nextTitle = data.title ?? existingCard.title;
     const nextDescription =
-      data.description !== undefined
-        ? data.description
-        : existingCard.description;
+      data.description !== undefined ? data.description : existingCard.description;
     const nextDueDate =
       data.dueDate !== undefined ? data.dueDate : existingCard.dueDate;
 
@@ -186,23 +178,13 @@ export async function DELETE(_req: Request, context: RouteContext) {
   const session = await getSession();
 
   if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return jsonError("Unauthorized", 401);
   }
 
-  const card = await prisma.card.findFirst({
-    where: {
-      id: cardId,
-      column: {
-        board: {
-          userId: session.id,
-        },
-      },
-    },
-    select: { id: true },
-  });
+  const card = await getCardOwnership(cardId, session.id);
 
   if (!card) {
-    return NextResponse.json({ error: "Card not found" }, { status: 404 });
+    return jsonError("Card not found", 404);
   }
 
   await prisma.card.delete({

@@ -11,12 +11,8 @@ export async function GET() {
         post: {
           summary: "Create or update the signed-in Firebase user",
           responses: {
-            "200": {
-              description: "User session created successfully",
-            },
-            "401": {
-              description: "Unauthorized",
-            },
+            "200": { description: "User session created successfully" },
+            "401": { description: "Unauthorized" },
           },
         },
       },
@@ -24,9 +20,7 @@ export async function GET() {
         post: {
           summary: "Clear the session cookie",
           responses: {
-            "200": {
-              description: "Logged out successfully",
-            },
+            "200": { description: "Logged out successfully" },
           },
         },
       },
@@ -34,17 +28,13 @@ export async function GET() {
         get: {
           summary: "Get boards for the current user",
           responses: {
-            "200": {
-              description: "List of boards",
-            },
+            "200": { description: "List of boards" },
           },
         },
         post: {
           summary: "Create a new board",
           responses: {
-            "200": {
-              description: "Board created",
-            },
+            "201": { description: "Board created" },
           },
         },
       },
@@ -52,28 +42,20 @@ export async function GET() {
         get: {
           summary: "Get a board by ID",
           responses: {
-            "200": {
-              description: "Board details",
-            },
-            "404": {
-              description: "Board not found",
-            },
+            "200": { description: "Board details" },
+            "404": { description: "Board not found" },
           },
         },
-        put: {
+        patch: {
           summary: "Update a board",
           responses: {
-            "200": {
-              description: "Board updated",
-            },
+            "200": { description: "Board updated" },
           },
         },
         delete: {
           summary: "Delete a board",
           responses: {
-            "200": {
-              description: "Board deleted",
-            },
+            "200": { description: "Board deleted" },
           },
         },
       },
@@ -81,9 +63,7 @@ export async function GET() {
         post: {
           summary: "Create a column inside a board",
           responses: {
-            "200": {
-              description: "Column created",
-            },
+            "201": { description: "Column created" },
           },
         },
       },
@@ -91,25 +71,20 @@ export async function GET() {
         get: {
           summary: "Get a column by ID",
           responses: {
-            "200": {
-              description: "Column details",
-            },
+            "200": { description: "Column details" },
+            "404": { description: "Column not found" },
           },
         },
-        put: {
+        patch: {
           summary: "Update a column",
           responses: {
-            "200": {
-              description: "Column updated",
-            },
+            "200": { description: "Column updated" },
           },
         },
         delete: {
           summary: "Delete a column",
           responses: {
-            "200": {
-              description: "Column deleted",
-            },
+            "200": { description: "Column deleted" },
           },
         },
       },
@@ -117,9 +92,7 @@ export async function GET() {
         post: {
           summary: "Create a card inside a column",
           responses: {
-            "200": {
-              description: "Card created",
-            },
+            "201": { description: "Card created" },
           },
         },
       },
@@ -127,25 +100,20 @@ export async function GET() {
         get: {
           summary: "Get a card by ID",
           responses: {
-            "200": {
-              description: "Card details",
-            },
+            "200": { description: "Card details" },
+            "404": { description: "Card not found" },
           },
         },
-        put: {
+        patch: {
           summary: "Update a card",
           responses: {
-            "200": {
-              description: "Card updated",
-            },
+            "200": { description: "Card updated" },
           },
         },
         delete: {
           summary: "Delete a card",
           responses: {
-            "200": {
-              description: "Card deleted",
-            },
+            "200": { description: "Card deleted" },
           },
         },
       },

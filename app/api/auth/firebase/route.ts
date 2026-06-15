@@ -69,9 +69,7 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (error) {
-    console.dir(error, {
-      depth: null,
-    });
+    console.error("Firebase authentication error:", error);
 
     return NextResponse.json(
       {

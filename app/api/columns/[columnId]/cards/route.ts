@@ -2,6 +2,13 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { generateCardAI } from "@/lib/ai";
+import { getColumnContext } from "@/lib/dashboard-queries";
+import {
+  jsonError,
+  parseDateTime,
+  readJsonBody,
+  text,
+} from "@/lib/api-utils";
 
 type RouteContext = {
   params: Promise<{
@@ -9,73 +16,62 @@ type RouteContext = {
   }>;
 };
 
-function parseDateTimeInput(value: unknown): Date | null {
-  if (value === undefined || value === null) return null;
-
-  const text = String(value).trim();
-  if (!text) return null;
-
-  const date = new Date(text);
-  if (Number.isNaN(date.getTime())) return null;
-
-  return date;
-}
+const MAX_TITLE_LENGTH = 100;
+const MAX_DESCRIPTION_LENGTH = 500;
 
 export async function POST(req: Request, context: RouteContext) {
   const { columnId } = await context.params;
-
   const session = await getSession();
 
   if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return jsonError("Unauthorized", 401);
   }
 
-const column = await prisma.column.findFirst({
-  where: {
-    id: columnId,
-    board: {
-      userId: session.id,
-    },
-  },
-  include: {
-    board: {
-      select: {
-        title: true,
-      },
-    },
-  },
-});
+  const column = await getColumnContext(columnId, session.id);
 
   if (!column) {
-    return NextResponse.json({ error: "Column not found" }, { status: 404 });
+    return jsonError("Column not found", 404);
   }
 
-  const body = await req.json().catch(() => null);
+  const body = await readJsonBody(req);
 
-  const title = String(body?.title ?? "").trim();
-  const description = String(body?.description ?? "").trim();
+  const title = text(body?.title);
+  const description = text(body?.description);
   const dueDateRaw = body?.dueDate;
-  const dueDate = parseDateTimeInput(dueDateRaw);
+  const dueDate = parseDateTime(dueDateRaw);
 
   if (!title) {
-    return NextResponse.json({ error: "Title is required" }, { status: 400 });
+    return jsonError("Title is required", 400);
   }
 
-  if (dueDateRaw !== undefined && dueDateRaw !== null && String(dueDateRaw).trim() && !dueDate) {
-    return NextResponse.json({ error: "Due date must be a valid date/time" }, { status: 400 });
+  if (title.length > MAX_TITLE_LENGTH) {
+    return jsonError(`Title must be ${MAX_TITLE_LENGTH} characters or less`, 400);
+  }
+
+  if (description.length > MAX_DESCRIPTION_LENGTH) {
+    return jsonError(`Description must be ${MAX_DESCRIPTION_LENGTH} characters or less`, 400);
+  }
+
+  if (
+    dueDateRaw !== undefined &&
+    dueDateRaw !== null &&
+    String(dueDateRaw).trim() &&
+    !dueDate
+  ) {
+    return jsonError("Due date must be a valid date/time", 400);
   }
 
   const position = await prisma.card.count({
     where: { columnId: column.id },
   });
 
-const ai = await generateCardAI({
-  title,
-  description: body?.description ?? null,
-  dueDate: body?.dueDate ?? null,
-  boardTitle: column.board.title,
-  columnTitle: column.title,
-});
+  const ai = await generateCardAI({
+    title,
+    description: description || null,
+    dueDate: dueDate ? dueDate.toISOString() : null,
+    boardTitle: column.board.title,
+    columnTitle: column.title,
+  });
 
   const card = await prisma.card.create({
     data: {

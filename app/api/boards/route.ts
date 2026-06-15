@@ -1,32 +1,22 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { getDashboardBoards } from "@/lib/dashboard-queries";
+import { jsonError, optionalText, readJsonBody, text } from "@/lib/api-utils";
+
+const MAX_TITLE_LENGTH = 80;
+const MAX_DESCRIPTION_LENGTH = 300;
+const MAX_ICON_LENGTH = 40;
+const MAX_COLOR_LENGTH = 40;
 
 export async function GET() {
   const session = await getSession();
 
   if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return jsonError("Unauthorized", 401);
   }
 
-  const boards = await prisma.board.findMany({
-    where: { userId: session.id },
-    orderBy: { updatedAt: "desc" },
-    include: {
-      columns: {
-        orderBy: { position: "asc" },
-        include: {
-          cards: {
-            select: {
-              id: true,
-              completed: true,
-            },
-          },
-        },
-      },
-    },
-  });
-
+  const boards = await getDashboardBoards(session.id);
   return NextResponse.json(boards);
 }
 
@@ -34,26 +24,51 @@ export async function POST(req: Request) {
   const session = await getSession();
 
   if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return jsonError("Unauthorized", 401);
   }
 
-  const body = await req.json().catch(() => null);
+  const body = await readJsonBody(req);
 
-  const title = String(body?.title ?? "").trim();
-  const description = String(body?.description ?? "").trim();
-  const icon = String(body?.icon ?? "").trim();
-  const color = String(body?.color ?? "").trim();
+  const title = text(body?.title);
+  const description = optionalText(body?.description);
+  const icon = optionalText(body?.icon);
+  const color = optionalText(body?.color);
 
   if (!title) {
-    return NextResponse.json({ error: "Title is required" }, { status: 400 });
+    return jsonError("Title is required", 400);
+  }
+
+  if (title.length > MAX_TITLE_LENGTH) {
+    return jsonError(
+      `Title must be ${MAX_TITLE_LENGTH} characters or less`,
+      400,
+    );
+  }
+
+  if ((description?.length ?? 0) > MAX_DESCRIPTION_LENGTH) {
+    return jsonError(
+      `Description must be ${MAX_DESCRIPTION_LENGTH} characters or less`,
+      400,
+    );
+  }
+
+  if ((icon?.length ?? 0) > MAX_ICON_LENGTH) {
+    return jsonError(`Icon must be ${MAX_ICON_LENGTH} characters or less`, 400);
+  }
+
+  if ((color?.length ?? 0) > MAX_COLOR_LENGTH) {
+    return jsonError(
+      `Color must be ${MAX_COLOR_LENGTH} characters or less`,
+      400,
+    );
   }
 
   const board = await prisma.board.create({
     data: {
       title,
-      description: description || null,
-      icon: icon || null,       
-      color: color || null,     
+      description,
+      icon,
+      color,
       userId: session.id,
       columns: {
         create: [
