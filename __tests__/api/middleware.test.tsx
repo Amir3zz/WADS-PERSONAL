@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { middleware } from "@/middleware";
+import { middleware } from "@/proxy";
 
 function createRequest(url: string, cookie?: string) {
   const req = new NextRequest(url, {

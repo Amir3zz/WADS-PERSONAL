@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -25,10 +24,6 @@ export default function LogoutButton() {
     try {
       setLoading(true);
 
-      // Clear Better Auth session (for users who signed in with email/password)
-      await authClient.signOut();
-
-      // Clear custom session cookie (for users who signed in with Firebase/Google)
       const res = await fetch("/api/logout", {
         method: "POST",
       });

@@ -13,7 +13,7 @@ const protectedPageRoutes = [
   "/account",
 ];
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   const isProtectedApi = protectedApiRoutes.some((route) =>

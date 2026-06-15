@@ -209,8 +209,6 @@ export type UserWhereInput = {
   todos?: Prisma.TodoListRelationFilter
   boards?: Prisma.BoardListRelationFilter
   studySessions?: Prisma.StudySessionListRelationFilter
-  accounts?: Prisma.AccountListRelationFilter
-  sessions?: Prisma.SessionListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -225,8 +223,6 @@ export type UserOrderByWithRelationInput = {
   todos?: Prisma.TodoOrderByRelationAggregateInput
   boards?: Prisma.BoardOrderByRelationAggregateInput
   studySessions?: Prisma.StudySessionOrderByRelationAggregateInput
-  accounts?: Prisma.AccountOrderByRelationAggregateInput
-  sessions?: Prisma.SessionOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -244,8 +240,6 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   todos?: Prisma.TodoListRelationFilter
   boards?: Prisma.BoardListRelationFilter
   studySessions?: Prisma.StudySessionListRelationFilter
-  accounts?: Prisma.AccountListRelationFilter
-  sessions?: Prisma.SessionListRelationFilter
 }, "id" | "firebaseUid" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -288,8 +282,6 @@ export type UserCreateInput = {
   todos?: Prisma.TodoCreateNestedManyWithoutUserInput
   boards?: Prisma.BoardCreateNestedManyWithoutUserInput
   studySessions?: Prisma.StudySessionCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -304,8 +296,6 @@ export type UserUncheckedCreateInput = {
   todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
   boards?: Prisma.BoardUncheckedCreateNestedManyWithoutUserInput
   studySessions?: Prisma.StudySessionUncheckedCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -320,8 +310,6 @@ export type UserUpdateInput = {
   todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
   boards?: Prisma.BoardUpdateManyWithoutUserNestedInput
   studySessions?: Prisma.StudySessionUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -336,8 +324,6 @@ export type UserUncheckedUpdateInput = {
   todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
   boards?: Prisma.BoardUncheckedUpdateManyWithoutUserNestedInput
   studySessions?: Prisma.StudySessionUncheckedUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -469,34 +455,6 @@ export type UserUpdateOneRequiredWithoutStudySessionsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutStudySessionsInput, Prisma.UserUpdateWithoutStudySessionsInput>, Prisma.UserUncheckedUpdateWithoutStudySessionsInput>
 }
 
-export type UserCreateNestedOneWithoutAccountsInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutAccountsInput, Prisma.UserUncheckedCreateWithoutAccountsInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutAccountsInput
-  connect?: Prisma.UserWhereUniqueInput
-}
-
-export type UserUpdateOneRequiredWithoutAccountsNestedInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutAccountsInput, Prisma.UserUncheckedCreateWithoutAccountsInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutAccountsInput
-  upsert?: Prisma.UserUpsertWithoutAccountsInput
-  connect?: Prisma.UserWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutAccountsInput, Prisma.UserUpdateWithoutAccountsInput>, Prisma.UserUncheckedUpdateWithoutAccountsInput>
-}
-
-export type UserCreateNestedOneWithoutSessionsInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutSessionsInput, Prisma.UserUncheckedCreateWithoutSessionsInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSessionsInput
-  connect?: Prisma.UserWhereUniqueInput
-}
-
-export type UserUpdateOneRequiredWithoutSessionsNestedInput = {
-  create?: Prisma.XOR<Prisma.UserCreateWithoutSessionsInput, Prisma.UserUncheckedCreateWithoutSessionsInput>
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSessionsInput
-  upsert?: Prisma.UserUpsertWithoutSessionsInput
-  connect?: Prisma.UserWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutSessionsInput, Prisma.UserUpdateWithoutSessionsInput>, Prisma.UserUncheckedUpdateWithoutSessionsInput>
-}
-
 export type UserCreateWithoutTodosInput = {
   id?: string
   firebaseUid: string
@@ -508,8 +466,6 @@ export type UserCreateWithoutTodosInput = {
   updatedAt?: Date | string
   boards?: Prisma.BoardCreateNestedManyWithoutUserInput
   studySessions?: Prisma.StudySessionCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTodosInput = {
@@ -523,8 +479,6 @@ export type UserUncheckedCreateWithoutTodosInput = {
   updatedAt?: Date | string
   boards?: Prisma.BoardUncheckedCreateNestedManyWithoutUserInput
   studySessions?: Prisma.StudySessionUncheckedCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTodosInput = {
@@ -554,8 +508,6 @@ export type UserUpdateWithoutTodosInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   boards?: Prisma.BoardUpdateManyWithoutUserNestedInput
   studySessions?: Prisma.StudySessionUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTodosInput = {
@@ -569,8 +521,6 @@ export type UserUncheckedUpdateWithoutTodosInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   boards?: Prisma.BoardUncheckedUpdateManyWithoutUserNestedInput
   studySessions?: Prisma.StudySessionUncheckedUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutBoardsInput = {
@@ -584,8 +534,6 @@ export type UserCreateWithoutBoardsInput = {
   updatedAt?: Date | string
   todos?: Prisma.TodoCreateNestedManyWithoutUserInput
   studySessions?: Prisma.StudySessionCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutBoardsInput = {
@@ -599,8 +547,6 @@ export type UserUncheckedCreateWithoutBoardsInput = {
   updatedAt?: Date | string
   todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
   studySessions?: Prisma.StudySessionUncheckedCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutBoardsInput = {
@@ -630,8 +576,6 @@ export type UserUpdateWithoutBoardsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
   studySessions?: Prisma.StudySessionUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutBoardsInput = {
@@ -645,8 +589,6 @@ export type UserUncheckedUpdateWithoutBoardsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
   studySessions?: Prisma.StudySessionUncheckedUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutStudySessionsInput = {
@@ -660,8 +602,6 @@ export type UserCreateWithoutStudySessionsInput = {
   updatedAt?: Date | string
   todos?: Prisma.TodoCreateNestedManyWithoutUserInput
   boards?: Prisma.BoardCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutStudySessionsInput = {
@@ -675,8 +615,6 @@ export type UserUncheckedCreateWithoutStudySessionsInput = {
   updatedAt?: Date | string
   todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
   boards?: Prisma.BoardUncheckedCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutStudySessionsInput = {
@@ -706,8 +644,6 @@ export type UserUpdateWithoutStudySessionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
   boards?: Prisma.BoardUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutStudySessionsInput = {
@@ -721,160 +657,6 @@ export type UserUncheckedUpdateWithoutStudySessionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
   boards?: Prisma.BoardUncheckedUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
-}
-
-export type UserCreateWithoutAccountsInput = {
-  id?: string
-  firebaseUid: string
-  email: string
-  name?: string | null
-  image?: string | null
-  emailVerified?: boolean
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  todos?: Prisma.TodoCreateNestedManyWithoutUserInput
-  boards?: Prisma.BoardCreateNestedManyWithoutUserInput
-  studySessions?: Prisma.StudySessionCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
-}
-
-export type UserUncheckedCreateWithoutAccountsInput = {
-  id?: string
-  firebaseUid: string
-  email: string
-  name?: string | null
-  image?: string | null
-  emailVerified?: boolean
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
-  boards?: Prisma.BoardUncheckedCreateNestedManyWithoutUserInput
-  studySessions?: Prisma.StudySessionUncheckedCreateNestedManyWithoutUserInput
-  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
-}
-
-export type UserCreateOrConnectWithoutAccountsInput = {
-  where: Prisma.UserWhereUniqueInput
-  create: Prisma.XOR<Prisma.UserCreateWithoutAccountsInput, Prisma.UserUncheckedCreateWithoutAccountsInput>
-}
-
-export type UserUpsertWithoutAccountsInput = {
-  update: Prisma.XOR<Prisma.UserUpdateWithoutAccountsInput, Prisma.UserUncheckedUpdateWithoutAccountsInput>
-  create: Prisma.XOR<Prisma.UserCreateWithoutAccountsInput, Prisma.UserUncheckedCreateWithoutAccountsInput>
-  where?: Prisma.UserWhereInput
-}
-
-export type UserUpdateToOneWithWhereWithoutAccountsInput = {
-  where?: Prisma.UserWhereInput
-  data: Prisma.XOR<Prisma.UserUpdateWithoutAccountsInput, Prisma.UserUncheckedUpdateWithoutAccountsInput>
-}
-
-export type UserUpdateWithoutAccountsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  firebaseUid?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
-  boards?: Prisma.BoardUpdateManyWithoutUserNestedInput
-  studySessions?: Prisma.StudySessionUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
-}
-
-export type UserUncheckedUpdateWithoutAccountsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  firebaseUid?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
-  boards?: Prisma.BoardUncheckedUpdateManyWithoutUserNestedInput
-  studySessions?: Prisma.StudySessionUncheckedUpdateManyWithoutUserNestedInput
-  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
-}
-
-export type UserCreateWithoutSessionsInput = {
-  id?: string
-  firebaseUid: string
-  email: string
-  name?: string | null
-  image?: string | null
-  emailVerified?: boolean
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  todos?: Prisma.TodoCreateNestedManyWithoutUserInput
-  boards?: Prisma.BoardCreateNestedManyWithoutUserInput
-  studySessions?: Prisma.StudySessionCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
-}
-
-export type UserUncheckedCreateWithoutSessionsInput = {
-  id?: string
-  firebaseUid: string
-  email: string
-  name?: string | null
-  image?: string | null
-  emailVerified?: boolean
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
-  boards?: Prisma.BoardUncheckedCreateNestedManyWithoutUserInput
-  studySessions?: Prisma.StudySessionUncheckedCreateNestedManyWithoutUserInput
-  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
-}
-
-export type UserCreateOrConnectWithoutSessionsInput = {
-  where: Prisma.UserWhereUniqueInput
-  create: Prisma.XOR<Prisma.UserCreateWithoutSessionsInput, Prisma.UserUncheckedCreateWithoutSessionsInput>
-}
-
-export type UserUpsertWithoutSessionsInput = {
-  update: Prisma.XOR<Prisma.UserUpdateWithoutSessionsInput, Prisma.UserUncheckedUpdateWithoutSessionsInput>
-  create: Prisma.XOR<Prisma.UserCreateWithoutSessionsInput, Prisma.UserUncheckedCreateWithoutSessionsInput>
-  where?: Prisma.UserWhereInput
-}
-
-export type UserUpdateToOneWithWhereWithoutSessionsInput = {
-  where?: Prisma.UserWhereInput
-  data: Prisma.XOR<Prisma.UserUpdateWithoutSessionsInput, Prisma.UserUncheckedUpdateWithoutSessionsInput>
-}
-
-export type UserUpdateWithoutSessionsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  firebaseUid?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
-  boards?: Prisma.BoardUpdateManyWithoutUserNestedInput
-  studySessions?: Prisma.StudySessionUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
-}
-
-export type UserUncheckedUpdateWithoutSessionsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  firebaseUid?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
-  boards?: Prisma.BoardUncheckedUpdateManyWithoutUserNestedInput
-  studySessions?: Prisma.StudySessionUncheckedUpdateManyWithoutUserNestedInput
-  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -886,16 +668,12 @@ export type UserCountOutputType = {
   todos: number
   boards: number
   studySessions: number
-  accounts: number
-  sessions: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   todos?: boolean | UserCountOutputTypeCountTodosArgs
   boards?: boolean | UserCountOutputTypeCountBoardsArgs
   studySessions?: boolean | UserCountOutputTypeCountStudySessionsArgs
-  accounts?: boolean | UserCountOutputTypeCountAccountsArgs
-  sessions?: boolean | UserCountOutputTypeCountSessionsArgs
 }
 
 /**
@@ -929,20 +707,6 @@ export type UserCountOutputTypeCountStudySessionsArgs<ExtArgs extends runtime.Ty
   where?: Prisma.StudySessionWhereInput
 }
 
-/**
- * UserCountOutputType without action
- */
-export type UserCountOutputTypeCountAccountsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.AccountWhereInput
-}
-
-/**
- * UserCountOutputType without action
- */
-export type UserCountOutputTypeCountSessionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.SessionWhereInput
-}
-
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -956,8 +720,6 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   todos?: boolean | Prisma.User$todosArgs<ExtArgs>
   boards?: boolean | Prisma.User$boardsArgs<ExtArgs>
   studySessions?: boolean | Prisma.User$studySessionsArgs<ExtArgs>
-  accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
-  sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -999,8 +761,6 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   todos?: boolean | Prisma.User$todosArgs<ExtArgs>
   boards?: boolean | Prisma.User$boardsArgs<ExtArgs>
   studySessions?: boolean | Prisma.User$studySessionsArgs<ExtArgs>
-  accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
-  sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1012,8 +772,6 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     todos: Prisma.$TodoPayload<ExtArgs>[]
     boards: Prisma.$BoardPayload<ExtArgs>[]
     studySessions: Prisma.$StudySessionPayload<ExtArgs>[]
-    accounts: Prisma.$AccountPayload<ExtArgs>[]
-    sessions: Prisma.$SessionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1421,8 +1179,6 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   todos<T extends Prisma.User$todosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$todosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TodoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   boards<T extends Prisma.User$boardsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$boardsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BoardPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   studySessions<T extends Prisma.User$studySessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$studySessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$StudySessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  accounts<T extends Prisma.User$accountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$accountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  sessions<T extends Prisma.User$sessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1922,54 +1678,6 @@ export type User$studySessionsArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.StudySessionScalarFieldEnum | Prisma.StudySessionScalarFieldEnum[]
-}
-
-/**
- * User.accounts
- */
-export type User$accountsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the Account
-   */
-  select?: Prisma.AccountSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the Account
-   */
-  omit?: Prisma.AccountOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.AccountInclude<ExtArgs> | null
-  where?: Prisma.AccountWhereInput
-  orderBy?: Prisma.AccountOrderByWithRelationInput | Prisma.AccountOrderByWithRelationInput[]
-  cursor?: Prisma.AccountWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.AccountScalarFieldEnum | Prisma.AccountScalarFieldEnum[]
-}
-
-/**
- * User.sessions
- */
-export type User$sessionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the Session
-   */
-  select?: Prisma.SessionSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the Session
-   */
-  omit?: Prisma.SessionOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.SessionInclude<ExtArgs> | null
-  where?: Prisma.SessionWhereInput
-  orderBy?: Prisma.SessionOrderByWithRelationInput | Prisma.SessionOrderByWithRelationInput[]
-  cursor?: Prisma.SessionWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.SessionScalarFieldEnum | Prisma.SessionScalarFieldEnum[]
 }
 
 /**
